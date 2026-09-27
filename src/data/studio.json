@@ -1,0 +1,26 @@
+{
+  "hours": { "start": "09:00", "end": "23:00" },
+  "rooms": [
+    { "id": "room-1", "name": "Sala Sakura", "beds": [{ "id": "bed-1", "name": "Lettino 1" }, { "id": "bed-2", "name": "Lettino 2" }] },
+    { "id": "room-2", "name": "Sala Koi", "beds": [{ "id": "bed-3", "name": "Lettino 1" }, { "id": "bed-4", "name": "Lettino 2" }] }
+  ],
+  "artists": [
+    { "id": "artist-1", "name": "Maya Conti", "color": "#d85a7f" },
+    { "id": "artist-2", "name": "Luca Neri", "color": "#3979c9" },
+    { "id": "artist-3", "name": "Elena Riva", "color": "#4f9a71" }
+  ],
+  "bookings": [
+    { "id": "booking-1", "date": "2026-09-27", "start": "10:00", "end": "12:30", "bedId": "bed-1", "artistId": "artist-1" },
+    { "id": "booking-2", "date": "2026-09-27", "start": "13:00", "end": "16:00", "bedId": "bed-3", "artistId": "artist-2" },
+    { "id": "booking-3", "date": "2026-09-27", "start": "15:30", "end": "18:00", "bedId": "bed-2", "artistId": "artist-3" }
+  ],
+  "requests": [
+    {
+      "id": "request-1", "name": "Giulia Bianchi", "contact": "giulia@example.com · 333 1234567", "description": "Drago giapponese con nuvole e fiori di ciliegio, avvolto lungo il braccio.", "bodyArea": "Braccio destro", "size": "Mezza manica", "style": "Irezumi", "references": "", "status": "consulenza",
+      "consultation": { "notes": "Preferisce movimento verso la spalla.", "subject": "Drago giapponese", "composition": "Drago verticale tra nuvole e sakura", "style": "Irezumi contemporaneo", "position": "Braccio destro", "size": "Mezza manica", "colors": "Nero, grigio, rosso tenue", "imageUrl": "" },
+      "consultationSlot": { "artistId": "artist-1", "date": "2026-09-27", "start": "09:00", "end": "09:30", "status": "confermata" }
+    },
+    { "id": "request-2", "name": "Marco Ferri", "contact": "marco.ferri@example.com", "description": "Piccola rosa botanica in memoria della nonna.", "bodyArea": "Avambraccio", "size": "8 cm", "style": "Fine line", "references": "", "status": "nuova", "consultation": { "notes": "", "subject": "", "composition": "", "style": "", "position": "", "size": "", "colors": "", "imageUrl": "" }, "consultationSlot": { "artistId": "artist-2", "date": "2026-09-27", "start": "16:00", "end": "16:30", "status": "proposta" } },
+    { "id": "request-3", "name": "Sara Moretti", "contact": "sara@example.com", "description": "Ramo di ulivo minimalista.", "bodyArea": "Caviglia", "size": "10 cm", "style": "Fine line", "references": "", "status": "chiusa", "consultation": { "notes": "Progetto completato.", "subject": "Ramo di ulivo", "composition": "Linea verticale", "style": "Fine line", "position": "Caviglia", "size": "10 cm", "colors": "Nero", "imageUrl": "" }, "consultationSlot": { "artistId": "artist-3", "date": "2026-09-19", "start": "11:00", "end": "11:30", "status": "confermata" } }
+  ]
+}
