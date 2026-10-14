@@ -6,3 +6,4 @@
 .center-card .center-code { font-size: 3rem; font-weight: 800; color: #a23d57; margin: 0 0 4px; letter-spacing: .05em; }
 .center-link { display: inline-block; background: #75273c; color: #fff; text-decoration: none; padding: 10px 18px; border-radius: 8px; font-weight: 650; }
 .center-link:focus-visible, .center-link:hover { background: #5e1d30; }
+.forbidden.center-page { min-height: auto; padding: 40px 0; }

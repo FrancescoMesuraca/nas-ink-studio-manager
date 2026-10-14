@@ -1,0 +1,18 @@
+.login-page { background: radial-gradient(circle at 20% 0%, #f3dfe4 0, transparent 45%), #f5f1ed; }
+.login-card { text-align: left; }
+.center-card .login-brand { color: #a23d57; font-size: .75rem; font-weight: 800; letter-spacing: .16em; margin: 0 0 6px; }
+.login-form { display: grid; gap: 12px; }
+.login-form label { display: grid; gap: 5px; color: #5a474d; font-size: .86rem; font-weight: 650; }
+.login-form input { width: 100%; border: 1px solid #cfc3c0; border-radius: 7px; padding: 10px; background: #fff; color: #2a2024; }
+.login-form input:focus-visible { outline: 2px solid #a23d57; outline-offset: 1px; }
+.login-form > button { background: #75273c; color: #fff; border: 0; border-radius: 8px; padding: 11px; font-weight: 700; }
+.login-form > button:disabled { opacity: .6; cursor: progress; }
+.center-card .login-error { background: #ffe5e7; border: 1px solid #e4a2aa; color: #811c30; padding: 10px; border-radius: 7px; margin: 0; }
+.login-demo { margin-top: 22px; padding-top: 18px; border-top: 1px dashed #dccfd2; }
+.login-demo h2 { font-size: .95rem; margin: 0 0 4px; }
+.center-card .login-demo p { font-size: .85rem; margin-bottom: 10px; }
+.login-demo ul { list-style: none; margin: 0; padding: 0; display: grid; gap: 6px; }
+.login-demo li button { width: 100%; display: grid; gap: 2px; text-align: left; background: #faf6f4; border: 1px solid #e4d8d4; border-radius: 8px; padding: 8px 10px; color: #2a2024; }
+.login-demo li button:hover, .login-demo li button:focus-visible { border-color: #a23d57; }
+.login-demo li span { font-size: .78rem; color: #6e5a62; }
+.login-back { display: inline-block; margin-top: 18px; color: #75273c; font-size: .88rem; }

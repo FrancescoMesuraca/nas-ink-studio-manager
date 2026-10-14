@@ -31,3 +31,10 @@ export class ApiError extends Error {
 
 export const errorMessage = (error: unknown, fallback = 'Operazione non riuscita.') =>
   error instanceof Error && error.message ? error.message : fallback
+
+// --- Autenticazione ---
+
+/** `titolare`: accesso completo. `tatuatore`: agenda, lettini, richieste e schede; niente configurazione né sito. */
+export type Role = 'titolare' | 'tatuatore'
+export type User = { id: string; name: string; email: string; role: Role; artistId?: string }
+export type Session = { token: string; user: User }

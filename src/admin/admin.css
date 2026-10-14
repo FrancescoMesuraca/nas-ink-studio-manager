@@ -33,3 +33,7 @@
   .app .bed-row { grid-template-columns: 1fr; }
   .app .three { grid-template-columns: 1fr; }
 }
+.app .user-bar { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; }
+.app .user-name { display: grid; text-align: right; line-height: 1.2; }
+.app .user-name small { color: #706066; font-size: .78rem; }
+@media (max-width: 760px) { .app .user-name { text-align: left; } }
