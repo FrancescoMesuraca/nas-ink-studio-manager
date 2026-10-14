@@ -1,3 +1,6 @@
+// DTO condivisi tra pagine, mock e client HTTP.
+// Sono il contratto con il backend: cambiarli vuol dire cambiare le API.
+
 export type RequestStatus = 'nuova' | 'consulenza' | 'approvata' | 'chiusa'
 
 export type Bed = { id: string; name: string }
@@ -9,3 +12,22 @@ export type ConsultationSlot = { artistId: string; date: string; start: string; 
 export type CustomerRequest = { id: string; name: string; contact: string; description: string; bodyArea: string; size: string; style: string; references: string; status: RequestStatus; consultation: Consultation; consultationSlot?: ConsultationSlot }
 export type StudioHours = { start: string; end: string }
 export type StudioData = { hours: StudioHours; rooms: Room[]; artists: Artist[]; bookings: Booking[]; requests: CustomerRequest[] }
+
+/** Dati per creare una richiesta (dal sito pubblico o dal gestionale). */
+export type NewRequestInput = Omit<CustomerRequest, 'id' | 'status' | 'consultation' | 'consultationSlot'>
+
+/** Errore restituito da tutte le API (mock e HTTP). `status` segue i codici HTTP; 0 = rete non raggiungibile. */
+export class ApiError extends Error {
+  readonly status: number
+  readonly fields?: Record<string, string>
+
+  constructor(status: number, message: string, fields?: Record<string, string>) {
+    super(message)
+    this.name = 'ApiError'
+    this.status = status
+    this.fields = fields
+  }
+}
+
+export const errorMessage = (error: unknown, fallback = 'Operazione non riuscita.') =>
+  error instanceof Error && error.message ? error.message : fallback
