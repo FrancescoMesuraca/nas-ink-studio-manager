@@ -6,6 +6,7 @@ import Beds from './admin/beds/Beds'
 import History from './admin/history/History'
 import Requests from './admin/requests/Requests'
 import Settings from './admin/settings/Settings'
+import SiteEditor from './admin/site-editor/SiteEditor'
 import AuthProvider from './auth/AuthProvider'
 import { RequireAuth, RequireRole } from './auth/guards'
 import LoginPage from './auth/LoginPage'
@@ -42,6 +43,7 @@ export const routes: RouteObject[] = [{
         { path: 'richieste/:id', element: <Requests /> },
         { path: 'schede', element: <History /> },
         { path: 'configurazione', element: ownerOnly(<Settings />) },
+        { path: 'sito', element: ownerOnly(<SiteEditor />) },
       ],
     },
     { path: '*', element: <NotFound /> },

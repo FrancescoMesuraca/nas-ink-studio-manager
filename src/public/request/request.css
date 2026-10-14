@@ -1,4 +1,4 @@
-.site .request-title { font-size: clamp(2.1rem, 9vw, 3.2rem); }
+.site .request-title { font-size: clamp(2.1rem, 9cqi, 3.2rem); }
 .site .request-intro { color: var(--site-muted); font-size: 1.05rem; margin-bottom: 28px; }
 
 .request-form { display: grid; gap: 22px; }
@@ -39,13 +39,13 @@
 .request-submit { width: 100%; }
 
 .request-sent { text-align: center; padding: 24px 0 8px; }
-.request-sent h1 { font-size: clamp(2rem, 8vw, 3rem); outline: none; }
+.request-sent h1 { font-size: clamp(2rem, 8cqi, 3rem); outline: none; }
 .site .request-sent p { color: var(--site-muted); max-width: 46ch; margin-left: auto; margin-right: auto; }
 .site .request-sent .request-sent-small { font-size: .92rem; margin-bottom: 28px; }
 .request-sent a:not(.site-button) { color: var(--site-accent); }
 .request-sent-icon { display: inline-grid; place-items: center; width: 64px; height: 64px; border-radius: 50%; background: var(--site-accent); color: var(--site-on-accent); font-size: 1.8rem; font-weight: 800; margin-bottom: 18px; }
 
-@media (min-width: 640px) {
+@container site (min-width: 640px) {
   .request-form fieldset { padding: 24px; }
   .request-two { grid-template-columns: 1fr 1fr; }
   .request-submit { width: auto; justify-self: start; }

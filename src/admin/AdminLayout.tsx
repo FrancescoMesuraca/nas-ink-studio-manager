@@ -13,6 +13,7 @@ const sections: { path: string; label: string; roles: Role[] }[] = [
   { path: 'richieste', label: 'Richieste', roles: everyone },
   { path: 'schede', label: 'Schede clienti', roles: everyone },
   { path: 'configurazione', label: 'Configurazione', roles: ['titolare'] },
+  { path: 'sito', label: 'Sito vetrina', roles: ['titolare'] },
 ]
 const roleLabel: Record<Role, string> = { titolare: 'Titolare', tatuatore: 'Tatuatore' }
 

@@ -12,6 +12,8 @@
   font-family: var(--site-font-body);
   line-height: 1.6;
   -webkit-font-smoothing: antialiased;
+  /* Le misure seguono la larghezza del sito, non della finestra: così l'anteprima "telefono" dell'editor è fedele. */
+  container: site / inline-size;
 }
 .site * { box-sizing: border-box; }
 .site h1, .site h2, .site h3 {
@@ -23,7 +25,7 @@
   margin: 0 0 .5em;
   text-wrap: balance;
 }
-.site h2 { font-size: clamp(1.8rem, 6vw, 2.7rem); }
+.site h2 { font-size: clamp(1.8rem, 6cqi, 2.7rem); }
 .site h3 { font-size: 1.25rem; }
 .site p { margin: 0 0 1em; }
 .site a { color: inherit; }
@@ -54,6 +56,8 @@
 /* Intestazione */
 .site-header { position: sticky; top: 0; z-index: 20; background: color-mix(in srgb, var(--site-bg) 88%, transparent); backdrop-filter: blur(10px); border-bottom: 1px solid var(--site-line); }
 .site-preview .site-header { position: relative; }
+.site-preview { min-height: 0; }
+.site-preview .site-hero { min-height: 520px; }
 .site-header-inner { width: min(1120px, 100%); margin: 0 auto; padding: 10px var(--site-gutter); display: flex; align-items: center; gap: 10px; min-height: 64px; }
 .site-brand { margin-right: auto; text-decoration: none; font-family: var(--site-font-heading); font-weight: var(--site-heading-weight); text-transform: var(--site-heading-transform); letter-spacing: .08em; font-size: 1.15rem; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; min-width: 0; }
 .site-brand img { max-height: 40px; width: auto; }
@@ -77,10 +81,10 @@
 }
 .site-hero::before { content: ''; position: absolute; inset: 0; z-index: -1; background: linear-gradient(180deg, rgba(10,8,9,.15) 0%, rgba(10,8,9,.55) 45%, rgba(10,8,9,.88) 100%); }
 .site-hero-inner { width: min(1120px, 100%); margin: 0 auto; padding: 0 var(--site-gutter); }
-.site-hero h1 { font-size: clamp(2.3rem, 10vw, 4.8rem); max-width: 14ch; margin-bottom: .35em; }
+.site-hero h1 { font-size: clamp(2.3rem, 10cqi, 4.8rem); max-width: 14ch; margin-bottom: .35em; }
 .site .site-eyebrow { display: inline-block; font-size: .78rem; font-weight: 800; letter-spacing: .2em; text-transform: uppercase; color: var(--site-accent); margin-bottom: 12px; }
 .site-hero .site-eyebrow { background: rgba(10,8,9,.55); padding: 4px 10px; border-radius: 999px; }
-.site-hero-subtitle { font-size: clamp(1rem, 3.6vw, 1.2rem); max-width: 38ch; color: rgba(248,242,236,.86); }
+.site-hero-subtitle { font-size: clamp(1rem, 3.6cqi, 1.2rem); max-width: 38ch; color: rgba(248,242,236,.86); }
 .site-hero-actions { display: flex; flex-wrap: wrap; align-items: center; gap: 12px 20px; margin-top: 24px; }
 .site-hero .site-link-button { color: #f8f2ec; }
 
@@ -130,7 +134,7 @@
 
 /* Pagine interne (privacy, modulo, conferma) */
 .site-page { padding-top: 40px; }
-.site-prose h1 { font-size: clamp(2rem, 8vw, 3rem); }
+.site-prose h1 { font-size: clamp(2rem, 8cqi, 3rem); }
 .site-prose h2 { font-size: 1.3rem; margin-top: 1.6em; }
 .site-prose p { color: var(--site-muted); }
 .site .site-notice { border: 1px dashed var(--site-accent); border-radius: 10px; padding: 12px 14px; color: var(--site-text); }
@@ -141,8 +145,8 @@
 .site-spinner { width: 34px; height: 34px; border-radius: 50%; border: 3px solid rgba(255,255,255,.2); border-top-color: #c9435a; animation: site-spin .8s linear infinite; }
 @keyframes site-spin { to { transform: rotate(360deg); } }
 
-@media (min-width: 760px) {
-  .site { --site-gutter: 28px; }
+@container site (min-width: 760px) {
+  .site > * { --site-gutter: 28px; }
   .site-menu-toggle { display: none; }
   .site-nav, .site-nav.open { display: flex; position: static; gap: 4px; padding: 0; background: none; border: 0; box-shadow: none; }
   .site-nav a { padding: 8px 12px; border: 0; border-radius: 999px; font-size: .95rem; }
@@ -165,7 +169,7 @@
 }
 
 .site-header-cta .cta-short { display: none; }
-@media (max-width: 479px) {
+@container site (max-width: 479px) {
   .site-header-cta .cta-full { display: none; }
   .site-header-cta .cta-short { display: inline; }
 }

@@ -1,0 +1,50 @@
+@scope (.app) to (.site) {
+  .site-editor .section-title { align-items: flex-start; }
+  .editor-open { color: #75273c; font-weight: 650; white-space: nowrap; }
+  .editor-grid { display: grid; grid-template-columns: minmax(340px, 440px) minmax(0, 1fr); gap: 22px; align-items: start; }
+  .editor-form { display: grid; gap: 12px; }
+  .editor-panel { padding: 0; }
+  .editor-panel summary { cursor: pointer; padding: 14px 18px; font-weight: 700; list-style-position: inside; }
+  .editor-panel[open] summary { border-bottom: 1px solid #eee5e0; }
+  .editor-panel .form { padding: 16px 18px 18px; }
+  .choice { border: 0; padding: 0; margin: 0; display: flex; flex-wrap: wrap; gap: 6px 14px; }
+  .choice legend { color: #5a474d; font-size: .86rem; font-weight: 650; padding: 0; margin-bottom: 5px; }
+  .choice label, .inline-check { display: flex; align-items: center; gap: 6px; font-weight: 500; color: #382930; }
+  .choice input, .inline-check input { width: auto; }
+  .font-classic { font-family: Georgia, 'Times New Roman', serif; }
+  .font-bold { font-family: Impact, 'Arial Narrow', sans-serif; letter-spacing: .03em; text-transform: uppercase; }
+  .color-row { display: grid; grid-template-columns: 48px 1fr; gap: 6px; }
+  .color-row input[type="color"] { padding: 2px; height: 38px; }
+  .editor-list { list-style: none; margin: 0; padding: 0; display: grid; gap: 8px; }
+  .editor-list > li { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 8px; padding: 8px 10px; border: 1px solid #eee5e0; border-radius: 8px; background: #fcfaf8; }
+  .gallery-list > li { display: grid; gap: 10px; padding: 12px; }
+  .order-buttons { display: flex; align-items: center; gap: 6px; }
+  .order-buttons .secondary { padding: 4px 10px; }
+  .artist-profile { display: grid; gap: 10px; padding-bottom: 14px; border-bottom: 1px solid #eee5e0; }
+  .artist-profile:last-child { border-bottom: 0; padding-bottom: 0; }
+  .artist-profile h4 { display: flex; align-items: center; gap: 8px; margin: 0; }
+  .artist-profile i { width: 12px; height: 12px; border-radius: 50%; }
+  .image-field { display: grid; gap: 5px; }
+  .image-field > label { display: block; }
+  .image-field small { font-weight: 400; color: #706066; }
+  .image-field-row { display: grid; grid-template-columns: 64px 1fr; gap: 10px; align-items: center; }
+  .image-field-row img, .image-field-empty { width: 64px; height: 64px; border-radius: 6px; object-fit: cover; border: 1px solid #dfd5d0; background: #f6f1ed; display: grid; place-items: center; color: #a8999e; }
+  .image-field-controls { display: grid; gap: 6px; min-width: 0; }
+  .image-field-actions { display: flex; align-items: center; gap: 8px; }
+  .image-field-actions .secondary { padding: 5px 10px; }
+  .field-error, .save-error { color: #a3293e; font-size: .84rem; font-weight: 600; margin: -4px 0 0; }
+  .save-ok { color: #2f6b45; font-weight: 650; margin: 0; }
+  .editor-savebar { position: sticky; bottom: 0; z-index: 1; display: grid; gap: 8px; padding: 12px 16px; background: #fff; border: 1px solid #dfd5d0; border-radius: 10px; box-shadow: 0 -6px 20px #3b172014; }
+  .editor-savebar p { margin: 0; }
+  .editor-preview { position: sticky; top: 12px; display: grid; gap: 8px; }
+  .preview-toolbar { display: flex; align-items: center; gap: 6px; }
+  .preview-toolbar span { margin-right: auto; font-weight: 700; color: #5a474d; }
+  .preview-toolbar button { padding: 5px 12px; font-size: .85rem; }
+  .preview-frame { height: calc(100vh - 80px); min-height: 480px; overflow: auto; border: 1px solid #dfd5d0; border-radius: 12px; background: #e9e2dc; box-shadow: inset 0 0 0 6px #e9e2dc; }
+  .preview-frame.phone { width: min(390px, 100%); margin: 0 auto; border-radius: 28px; border: 10px solid #2a2024; }
+  @media (max-width: 960px) {
+    .editor-grid { grid-template-columns: 1fr; }
+    .editor-preview { position: static; }
+    .preview-frame { height: 70vh; }
+  }
+}
