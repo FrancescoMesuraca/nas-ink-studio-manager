@@ -1,5 +1,5 @@
 import type { ReactNode } from 'react'
-import { Navigate, Outlet, type RouteObject } from 'react-router'
+import { Navigate, Outlet, ScrollRestoration, type RouteObject } from 'react-router'
 import AdminLayout from './admin/AdminLayout'
 import ArtistAgenda from './admin/agenda/ArtistAgenda'
 import Beds from './admin/beds/Beds'
@@ -9,14 +9,23 @@ import Settings from './admin/settings/Settings'
 import AuthProvider from './auth/AuthProvider'
 import { RequireAuth, RequireRole } from './auth/guards'
 import LoginPage from './auth/LoginPage'
+import HomePage from './public/HomePage'
+import PrivacyPage from './public/PrivacyPage'
+import PublicLayout from './public/PublicLayout'
 import NotFound from './shared/NotFound'
 
 const ownerOnly = (element: ReactNode) => <RequireRole roles={['titolare']}>{element}</RequireRole>
 
 export const routes: RouteObject[] = [{
-  element: <AuthProvider><Outlet /></AuthProvider>,
+  element: <AuthProvider><ScrollRestoration /><Outlet /></AuthProvider>,
   children: [
-    { path: '/', element: <Navigate to="/gestionale" replace /> },
+    {
+      element: <PublicLayout />,
+      children: [
+        { path: '/', element: <HomePage /> },
+        { path: '/privacy', element: <PrivacyPage /> },
+      ],
+    },
     { path: '/login', element: <LoginPage /> },
     {
       path: '/gestionale',

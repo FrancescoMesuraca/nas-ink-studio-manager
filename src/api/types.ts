@@ -38,3 +38,30 @@ export const errorMessage = (error: unknown, fallback = 'Operazione non riuscita
 export type Role = 'titolare' | 'tatuatore'
 export type User = { id: string; name: string; email: string; role: Role; artistId?: string }
 export type Session = { token: string; user: User }
+
+// --- Sito vetrina ---
+
+export type SiteSectionId = 'about' | 'gallery' | 'artists' | 'contacts'
+export type SiteTheme = { accent: string; background: 'dark' | 'light'; font: 'classic' | 'modern' | 'bold' }
+export type GalleryItem = { id: string; imageUrl: string; caption?: string; artistId?: string }
+/** Bio e foto facoltative dei tatuatori; nome e colore arrivano dal gestionale. */
+export type ArtistProfile = { artistId: string; bio?: string; photoUrl?: string; instagram?: string }
+
+/** Contenuti del sito personalizzabili dal titolare. Poche scelte guidate, non un page builder. */
+export type SiteContent = {
+  studioName: string
+  logoUrl?: string
+  theme: SiteTheme
+  hero: { title: string; subtitle: string; imageUrl: string; ctaLabel: string }
+  about: { title: string; text: string; imageUrl?: string }
+  gallery: GalleryItem[]
+  artistProfiles: ArtistProfile[]
+  contacts: { address: string; phone: string; email: string; instagram?: string; mapUrl?: string }
+  /** L'ordine dell'array è l'ordine in pagina; `visible: false` nasconde la sezione. */
+  sections: { id: SiteSectionId; visible: boolean }[]
+}
+
+export type PublicArtist = { id: string; name: string; color: string; bio?: string; photoUrl?: string; instagram?: string }
+
+/** Tutto ciò che serve alla parte pubblica, senza dati riservati del gestionale. */
+export type PublicSite = { content: SiteContent; artists: PublicArtist[]; hours: StudioHours }
