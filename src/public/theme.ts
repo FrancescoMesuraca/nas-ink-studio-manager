@@ -4,8 +4,8 @@ import type { CSSProperties } from 'react'
 import type { SiteTheme } from '../api'
 
 const palettes = {
-  dark: { bg: '#131012', surface: '#1d181b', raised: '#262024', text: '#f4ede6', muted: '#b9ada7', line: 'rgba(255,255,255,.12)' },
-  light: { bg: '#f7f2ec', surface: '#ffffff', raised: '#efe7df', text: '#1f1a1c', muted: '#665a5d', line: 'rgba(31,26,28,.12)' },
+  dark: { bg: '#131012', surface: '#1d181b', raised: '#262024', text: '#f4ede6', muted: '#b9ada7', line: 'rgba(255,255,255,.12)', error: '#ff8a9a' },
+  light: { bg: '#f7f2ec', surface: '#ffffff', raised: '#efe7df', text: '#1f1a1c', muted: '#665a5d', line: 'rgba(31,26,28,.12)', error: '#b3263c' },
 }
 
 const fonts = {
@@ -37,6 +37,7 @@ export function themeVars(theme: SiteTheme): CSSProperties {
     '--site-text': palette.text,
     '--site-muted': palette.muted,
     '--site-line': palette.line,
+    '--site-error': palette.error,
     '--site-font-heading': font.heading,
     '--site-font-body': font.body,
     '--site-heading-transform': font.transform,

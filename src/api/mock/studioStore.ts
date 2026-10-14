@@ -2,17 +2,24 @@
 // (una richiesta inviata dal sito deve comparire subito tra le richieste del gestionale).
 import seed from './seed/studio.json'
 import { overlaps } from '../../services/bookingRules.js'
-import type { ConsultationSlot, StudioData } from '../types'
+import type { ConsultationSlot, CustomerRequest, StudioData } from '../types'
 import { clone, readJson, writeJson } from './storage'
 
 export const studioKey = 'nas-ink-studio-data'
 
 export const seedStudio = () => clone(seed as StudioData)
 
+/** Richiesta salvata da una versione precedente, senza i campi introdotti dal modulo pubblico. */
+type StoredRequest = Omit<CustomerRequest, 'source' | 'referenceImages'> & Partial<Pick<CustomerRequest, 'source' | 'referenceImages'>>
+
+/** Porta una richiesta salvata al formato attuale: prima del sito tutte nascevano dal gestionale. */
+export const migrateRequest = (request: StoredRequest): CustomerRequest =>
+  ({ ...request, source: request.source ?? 'gestionale', referenceImages: request.referenceImages ?? [] })
+
 export function loadStudio(): StudioData {
-  const parsed = readJson<StudioData>(studioKey)
+  const parsed = readJson<Omit<StudioData, 'requests'> & { requests?: StoredRequest[] }>(studioKey)
   if (!parsed) return seedStudio()
-  return { ...parsed, hours: parsed.hours ?? seed.hours }
+  return { ...parsed, hours: parsed.hours ?? seed.hours, requests: (parsed.requests ?? []).map(migrateRequest) }
 }
 
 export function saveStudio(next: StudioData) {

@@ -37,3 +37,9 @@
 .app .user-name { display: grid; text-align: right; line-height: 1.2; }
 .app .user-name small { color: #706066; font-size: .78rem; }
 @media (max-width: 760px) { .app .user-name { text-align: left; } }
+.app .request-meta { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; color: #706066; font-size: .82rem; }
+.app .source { display: inline-block; font-size: .7rem; padding: 2px 7px; border-radius: 12px; background: #ece7e4; text-transform: uppercase; margin-left: 4px; }
+.app .request-meta .source { margin-left: 0; }
+.app .source.sito { background: #e4d7f5; color: #4b2a7a; }
+.app .reference-images { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 12px; }
+.app .reference-images img { width: 96px; height: 96px; object-fit: cover; border-radius: 6px; border: 1px solid #dfd5d0; }

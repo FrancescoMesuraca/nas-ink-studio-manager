@@ -1,13 +1,22 @@
 import { useState } from 'react'
 import { requestsApi, type Consultation, type ConsultationSlot, type CustomerRequest, type StudioData } from '../../api'
-import { dateText, formatDate, nextHour } from '../../shared/time'
+import { dateText, dateTimeText, formatDate, nextHour } from '../../shared/time'
 import type { Runner } from '../adminContext'
 
 export default function RequestDetail({ request, data, run }: { request: CustomerRequest; data: StudioData; run: Runner }) {
   const [form, setForm] = useState(request.consultation)
   const [slot, setSlot] = useState<Omit<ConsultationSlot, 'status'>>({ artistId: request.consultationSlot?.artistId ?? data.artists[0]?.id ?? '', date: request.consultationSlot?.date ?? dateText(new Date()), start: request.consultationSlot?.start ?? data.hours.start, end: request.consultationSlot?.end ?? nextHour(data.hours) })
   const set = (key: keyof Consultation, value: string) => setForm({ ...form, [key]: value })
-  return <article className="card detail"><h2>{request.name}</h2><p>{request.contact}</p><p><b>Idea:</b> {request.description}</p><p>{request.bodyArea} · {request.size} · {request.style}</p>
+  const preferredArtist = data.artists.find((artist) => artist.id === request.preferredArtistId)
+  return <article className="card detail"><h2>{request.name}</h2>
+    <p className="request-meta"><span className={'source ' + request.source}>{request.source === 'sito' ? 'Dal sito' : 'Dal gestionale'}</span>{request.createdAt && <span>Ricevuta il {dateTimeText(request.createdAt)}</span>}</p>
+    <p>{request.email || request.phone ? <>{request.email && <a href={'mailto:' + request.email}>{request.email}</a>}{request.email && request.phone && ' · '}{request.phone && <a href={'tel:' + request.phone.replace(/s+/g, '')}>{request.phone}</a>}</> : request.contact}</p>
+    <p><b>Idea:</b> {request.description}</p><p>{request.bodyArea} · {request.size} · {request.style}</p>
+    {preferredArtist && <p><b>Tatuatore preferito:</b> {preferredArtist.name}</p>}
+    {request.availability && <p><b>Disponibilità:</b> {request.availability}</p>}
+    {request.references && <p><b>Riferimenti:</b> {request.references}</p>}
+    {request.referenceImages.length > 0 && <div className="reference-images">{request.referenceImages.map((url, index) => <a key={index} href={url} target="_blank" rel="noreferrer"><img src={url} alt={'Riferimento ' + (index + 1) + ' inviato dal cliente'} /></a>)}</div>}
+    {request.privacyConsentAt && <p className="hint">Consenso privacy accettato il {dateTimeText(request.privacyConsentAt)}.</p>}
     <label>Stato<select value={request.status} onChange={(e) => void run(() => requestsApi.setStatus(request.id, e.target.value as CustomerRequest['status']))}>{['nuova', 'consulenza', 'approvata', 'chiusa'].map((status) => <option key={status}>{status}</option>)}</select></label>
     <hr /><h3>Consulenza in studio</h3><p className="hint">Il tatuatore propone una fascia. La conferma del cliente è simulata qui; non viene inviata alcuna comunicazione.</p>
     {request.consultationSlot && <p className="slot-summary"><b>{request.consultationSlot.status === 'confermata' ? 'Appuntamento confermato' : 'Proposta in attesa'}</b> · {formatDate(request.consultationSlot.date)} {request.consultationSlot.start}–{request.consultationSlot.end} · {data.artists.find((artist) => artist.id === request.consultationSlot?.artistId)?.name}</p>}

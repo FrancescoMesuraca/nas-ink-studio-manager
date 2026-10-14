@@ -8,3 +8,4 @@ export const dateText = (date: Date) => [date.getFullYear(), String(date.getMont
 export const addDays = (date: string, days: number) => { const value = new Date(date + 'T12:00:00'); value.setDate(value.getDate() + days); return dateText(value) }
 export const firstDayOfWeek = (date: string) => { const day = new Date(date + 'T12:00:00').getDay(); return addDays(date, -(day === 0 ? 6 : day - 1)) }
 export const formatDate = (date: string) => new Intl.DateTimeFormat('it-IT', { weekday: 'short', day: 'numeric', month: 'short' }).format(new Date(date + 'T12:00:00'))
+export const dateTimeText = (iso: string) => new Intl.DateTimeFormat('it-IT', { day: 'numeric', month: 'long', year: 'numeric', hour: '2-digit', minute: '2-digit' }).format(new Date(iso))

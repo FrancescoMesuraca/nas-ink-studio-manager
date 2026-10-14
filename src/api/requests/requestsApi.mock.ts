@@ -3,6 +3,7 @@ import { artistBusy, loadStudio, saveStudio } from '../mock/studioStore'
 import { simulate, uid } from '../mock/storage'
 import { ApiError, type CustomerRequest, type StudioData } from '../types'
 import type { RequestsApi } from './requestsApi'
+import { validateNewRequest } from './requestValidation'
 
 const change = (next: (data: StudioData) => StudioData) => simulate(() => saveStudio(next(loadStudio())))
 const fail = (status: number, message: string): never => { throw new ApiError(status, message) }
@@ -12,8 +13,21 @@ const updateRequest = (data: StudioData, id: string, fields: Partial<CustomerReq
 
 export const requestsApiMock: RequestsApi = {
   create: (input) => simulate(() => {
+    const errors = validateNewRequest(input)
+    const first = Object.values(errors)[0]
+    if (first) throw new ApiError(400, first, errors)
     const data = loadStudio()
-    const request: CustomerRequest = { ...input, id: uid(), status: 'nuova', consultation: { ...emptyConsultation } }
+    if (input.preferredArtistId && !data.artists.some((artist) => artist.id === input.preferredArtistId)) fail(400, 'Tatuatore non valido.')
+    const { privacyConsent, ...fields } = input
+    const now = new Date().toISOString()
+    const email = fields.email?.trim() || undefined
+    const phone = fields.phone?.trim() || undefined
+    const request: CustomerRequest = {
+      ...fields, email, phone,
+      contact: fields.contact.trim() || [email, phone].filter(Boolean).join(' · '),
+      id: uid(), status: 'nuova', consultation: { ...emptyConsultation }, createdAt: now,
+      ...(privacyConsent ? { privacyConsentAt: now } : {}),
+    }
     saveStudio({ ...data, requests: [...data.requests, request] })
     return request
   }),

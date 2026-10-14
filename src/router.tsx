@@ -12,6 +12,8 @@ import LoginPage from './auth/LoginPage'
 import HomePage from './public/HomePage'
 import PrivacyPage from './public/PrivacyPage'
 import PublicLayout from './public/PublicLayout'
+import RequestFormPage from './public/request/RequestFormPage'
+import RequestSentPage from './public/request/RequestSentPage'
 import NotFound from './shared/NotFound'
 
 const ownerOnly = (element: ReactNode) => <RequireRole roles={['titolare']}>{element}</RequireRole>
@@ -23,6 +25,8 @@ export const routes: RouteObject[] = [{
       element: <PublicLayout />,
       children: [
         { path: '/', element: <HomePage /> },
+        { path: '/richiesta', element: <RequestFormPage /> },
+        { path: '/richiesta/inviata', element: <RequestSentPage /> },
         { path: '/privacy', element: <PrivacyPage /> },
       ],
     },

@@ -9,6 +9,8 @@ import { siteApiHttp } from './site/siteApi.http'
 import { siteApiMock } from './site/siteApi.mock'
 import { studioApiHttp } from './studio/studioApi.http'
 import { studioApiMock } from './studio/studioApi.mock'
+import { uploadsApiHttp } from './uploads/uploadsApi.http'
+import { uploadsApiMock } from './uploads/uploadsApi.mock'
 
 export { isMockMode } from './config'
 export * from './types'
@@ -16,11 +18,14 @@ export type { AuthApi } from './auth/authApi'
 export type { RequestsApi } from './requests/requestsApi'
 export type { SiteApi } from './site/siteApi'
 export type { StudioApi } from './studio/studioApi'
+export type { UploadsApi } from './uploads/uploadsApi'
+export { validateNewRequest, type RequestFieldErrors } from './requests/requestValidation'
 
 export const authApi = isMockMode ? authApiMock : authApiHttp
 export const studioApi = isMockMode ? studioApiMock : studioApiHttp
 export const requestsApi = isMockMode ? requestsApiMock : requestsApiHttp
 export const siteApi = isMockMode ? siteApiMock : siteApiHttp
+export const uploadsApi = isMockMode ? uploadsApiMock : uploadsApiHttp
 
 /** Credenziali demo, solo in modalità mock (vuoto con il backend vero). */
 export const demoAccounts = isMockMode ? mockDemoAccounts : []

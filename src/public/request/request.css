@@ -1,0 +1,52 @@
+.site .request-title { font-size: clamp(2.1rem, 9vw, 3.2rem); }
+.site .request-intro { color: var(--site-muted); font-size: 1.05rem; margin-bottom: 28px; }
+
+.request-form { display: grid; gap: 22px; }
+.request-form fieldset { margin: 0; padding: 20px 16px; border: 1px solid var(--site-line); border-radius: var(--site-radius); background: var(--site-surface); display: grid; gap: 16px; min-width: 0; }
+.request-form legend { padding: 0 6px; margin-left: -6px; font-family: var(--site-font-heading); font-weight: var(--site-heading-weight); text-transform: var(--site-heading-transform); font-size: 1.15rem; }
+.request-two { display: grid; gap: 16px; }
+.request-field { display: grid; gap: 6px; min-width: 0; }
+.request-label { font-weight: 650; font-size: .95rem; }
+.request-label small { font-weight: 400; color: var(--site-muted); }
+.request-form abbr { color: var(--site-accent); text-decoration: none; }
+.site .request-hint { color: var(--site-muted); font-size: .85rem; margin: -2px 0 0; }
+.site .request-error { color: var(--site-error); font-size: .88rem; font-weight: 600; margin: 0; }
+
+.request-form input:not([type="checkbox"]), .request-form select, .request-form textarea {
+  width: 100%; min-height: 48px; padding: 11px 12px; border-radius: 10px;
+  border: 1px solid color-mix(in srgb, var(--site-text) 28%, transparent);
+  background: var(--site-bg); color: var(--site-text); font: inherit; font-size: 16px; /* 16px: niente zoom automatico su iOS */
+}
+.request-form textarea { resize: vertical; min-height: 130px; }
+.request-form input:focus-visible, .request-form select:focus-visible, .request-form textarea:focus-visible { outline: 2px solid var(--site-accent); outline-offset: 1px; border-color: transparent; }
+.request-form [aria-invalid="true"] { border-color: var(--site-error); box-shadow: 0 0 0 1px var(--site-error); }
+
+.request-alert { padding: 12px 14px; border-radius: 10px; border: 1px solid var(--site-error); background: color-mix(in srgb, var(--site-error) 14%, transparent); font-weight: 600; }
+
+.request-images { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 10px; }
+.request-images figure { position: relative; margin: 0; }
+.request-images img, .request-image-loading, .request-add-image { width: 100%; aspect-ratio: 1; border-radius: 10px; object-fit: cover; }
+.request-images figure button { position: absolute; top: 6px; right: 6px; width: 32px; height: 32px; border-radius: 50%; border: 0; background: rgba(10,8,9,.75); color: #fff; font-size: 1.2rem; line-height: 1; cursor: pointer; }
+.request-add-image { display: grid; place-content: center; justify-items: center; gap: 2px; border: 1.5px dashed color-mix(in srgb, var(--site-text) 35%, transparent); background: transparent; color: var(--site-text); font: inherit; font-size: .85rem; cursor: pointer; }
+.request-add-image span { font-size: 1.6rem; line-height: 1; color: var(--site-accent); }
+.request-image-loading { background: linear-gradient(90deg, var(--site-raised), var(--site-surface), var(--site-raised)); background-size: 200% 100%; animation: request-shimmer 1.2s linear infinite; }
+@keyframes request-shimmer { to { background-position: -200% 0; } }
+
+.request-consent label { display: grid; grid-template-columns: 24px 1fr; gap: 12px; align-items: start; cursor: pointer; font-size: .95rem; }
+.request-consent input { width: 22px; height: 22px; margin: 2px 0 0; accent-color: var(--site-accent); }
+.request-consent a { color: var(--site-accent); }
+.request-consent .request-error { margin: 6px 0 0 36px; }
+.request-submit { width: 100%; }
+
+.request-sent { text-align: center; padding: 24px 0 8px; }
+.request-sent h1 { font-size: clamp(2rem, 8vw, 3rem); outline: none; }
+.site .request-sent p { color: var(--site-muted); max-width: 46ch; margin-left: auto; margin-right: auto; }
+.site .request-sent .request-sent-small { font-size: .92rem; margin-bottom: 28px; }
+.request-sent a:not(.site-button) { color: var(--site-accent); }
+.request-sent-icon { display: inline-grid; place-items: center; width: 64px; height: 64px; border-radius: 50%; background: var(--site-accent); color: var(--site-on-accent); font-size: 1.8rem; font-weight: 800; margin-bottom: 18px; }
+
+@media (min-width: 640px) {
+  .request-form fieldset { padding: 24px; }
+  .request-two { grid-template-columns: 1fr 1fr; }
+  .request-submit { width: auto; justify-self: start; }
+}
