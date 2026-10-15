@@ -1,0 +1,5 @@
+[
+  { "id": "user-1", "name": "Nadia Sala", "email": "titolare@nasink.demo", "password": "demo1234", "role": "titolare" },
+  { "id": "user-2", "name": "Maya Conti", "email": "maya@nasink.demo", "password": "demo1234", "role": "tatuatore", "artistId": "artist-1" },
+  { "id": "user-3", "name": "Luca Neri", "email": "luca@nasink.demo", "password": "demo1234", "role": "tatuatore", "artistId": "artist-2" }
+]

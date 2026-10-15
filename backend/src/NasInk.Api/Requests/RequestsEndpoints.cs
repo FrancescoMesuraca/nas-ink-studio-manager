@@ -10,8 +10,7 @@ namespace NasInk.Api.Requests;
 //
 //   POST /requests   NewRequestInput → CustomerRequest
 //        pubblico per le richieste dal sito (source "sito"), con limite di invii per indirizzo IP.
-//        Le richieste dal gestionale (source "gestionale") richiedono il login: finché
-//        l'autenticazione non esiste rispondono 401.
+//        Le richieste dal gestionale (source "gestionale") richiedono il login (401 senza token).
 //   PATCH /requests/:id, PUT /requests/:id/consultation, …   (da fare, autenticati)
 public static class RequestsEndpoints
 {
@@ -48,11 +47,13 @@ public static class RequestsEndpoints
         return app;
     }
 
-    private static async Task<IResult> CreateRequest(NewRequestInput input, NasInkDbContext db, TimeProvider clock, CancellationToken cancellationToken)
+    private static async Task<IResult> CreateRequest(
+        NewRequestInput input, HttpContext context, NasInkDbContext db, TimeProvider clock, CancellationToken cancellationToken)
     {
         if (input.Source is not (RequestSource.Sito or RequestSource.Gestionale))
             throw new ApiException(StatusCodes.Status400BadRequest, "Origine della richiesta non valida.");
-        if (input.Source == RequestSource.Gestionale)
+        // L'endpoint è pubblico, ma le richieste "gestionale" le può inserire solo chi ha fatto il login.
+        if (input.Source == RequestSource.Gestionale && context.User.Identity?.IsAuthenticated != true)
             throw new ApiException(StatusCodes.Status401Unauthorized, "Accedi al gestionale per inserire una richiesta.");
 
         // Come nel mock: il primo messaggio diventa `message`, tutti finiscono in `fields`.

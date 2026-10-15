@@ -1,8 +1,10 @@
 using System.Text.Json;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using NasInk.Domain.Requests;
 using NasInk.Domain.Site;
 using NasInk.Domain.Studio;
+using NasInk.Domain.Users;
 
 namespace NasInk.Api.Data;
 
@@ -17,8 +19,9 @@ public static class DbSeeder
     // Solo le parti di studio.json che servono oggi; sale e prenotazioni arriveranno più avanti.
     private sealed record StudioSeed(StudioHours Hours, List<ArtistSeed> Artists, List<CustomerRequest> Requests);
     private sealed record ArtistSeed(string Id, string Name, string Color);
+    private sealed record UserSeed(string Id, string Name, string Email, string Password, string Role, string? ArtistId);
 
-    public static async Task SeedAsync(NasInkDbContext db, CancellationToken cancellationToken = default)
+    public static async Task SeedAsync(NasInkDbContext db, IPasswordHasher<User> passwordHasher, CancellationToken cancellationToken = default)
     {
         var seedFolder = Path.Combine(AppContext.BaseDirectory, "Data", "Seed");
         var studio = await ReadAsync<StudioSeed>(Path.Combine(seedFolder, "studio.json"), cancellationToken);
@@ -33,6 +36,18 @@ public static class DbSeeder
         // Controllo separato: i database creati prima della tabella Requests ricevono comunque le richieste demo.
         if (!await db.Requests.AnyAsync(cancellationToken))
             db.Requests.AddRange(studio.Requests);
+
+        // Utenti demo: nel file la password è in chiaro (come nel mock), nel database salviamo solo l'hash.
+        if (!await db.Users.AnyAsync(cancellationToken))
+        {
+            var users = await ReadAsync<List<UserSeed>>(Path.Combine(seedFolder, "users.json"), cancellationToken);
+            db.Users.AddRange(users.Select(seed =>
+            {
+                var user = new User { Id = seed.Id, Name = seed.Name, Email = User.NormalizeEmail(seed.Email), Role = seed.Role, ArtistId = seed.ArtistId };
+                user.PasswordHash = passwordHasher.HashPassword(user, seed.Password);
+                return user;
+            }));
+        }
 
         if (!await db.SiteDocuments.AnyAsync(cancellationToken))
         {

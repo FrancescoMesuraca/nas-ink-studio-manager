@@ -6,8 +6,13 @@ Endpoint implementati:
 
 | Metodo e percorso | Accesso | Note |
 |---|---|---|
+| `POST /auth/login` | pubblico | `{ email, password }` → `{ token, user }`; 400 se mancano i dati, 401 se errati; massimo 10 tentativi ogni 5 minuti per IP |
+| `GET /auth/me` | autenticato | utente del token; 401 se manca, è scaduto o revocato |
+| `POST /auth/logout` | autenticato | revoca il token (204) |
 | `GET /site/public` | pubblico | contenuti del sito + tatuatori + orari |
-| `POST /requests` | pubblico per `source: "sito"` | validazione come `requestValidation.ts`, 400 con `fields`; `source: "gestionale"` risponde 401 finché non c'è il login; massimo 5 invii ogni 10 minuti per IP (429) |
+| `POST /requests` | pubblico per `source: "sito"`, autenticato per `"gestionale"` | validazione come `requestValidation.ts`, 400 con `fields`; 401 per `"gestionale"` senza login; massimo 5 invii ogni 10 minuti per IP (429) |
+
+Utenti demo (da `src/NasInk.Api/Data/Seed/users.json`, password `demo1234`): `titolare@nasink.demo` (titolare), `maya@nasink.demo` e `luca@nasink.demo` (tatuatori).
 
 Gli altri endpoint del contratto sono ancora da fare.
 
@@ -70,6 +75,7 @@ backend/
   compose.yaml                 PostgreSQL 17 per lo sviluppo
   src/NasInk.Domain/           modelli e regole di business, senza dipendenze da ASP.NET o EF
   src/NasInk.Api/              Minimal API, EF Core (Npgsql), CORS, formato degli errori
+    Auth/                      JWT, login, me, logout
     Data/                      DbContext, seed, migrazioni
     Errors/                    { message, fields } per tutte le risposte di errore
     Requests/                  endpoint /requests e limite anti-spam
@@ -84,7 +90,11 @@ Scelte principali:
 - **Errori**: per rispondere con un errore previsto, negli endpoint si lancia `ApiException(status, messaggio, campi)`. Le eccezioni impreviste diventano un `500` generico e le rotte inesistenti un `404`, sempre nel formato `{ "message": "..." }`.
 - **JSON**: camelCase, e i campi `null` vengono omessi, così i campi facoltativi TypeScript (`bio?: string`) arrivano come assenti.
 - **Anti-spam**: `POST /requests` usa il rate limiter di ASP.NET Core (finestra fissa per indirizzo IP). Si regola in `RateLimiting:PublicForm` (`PermitLimit`, `WindowMinutes`).
-- **Autenticazione (da fare)**: JWT in `Authorization: Bearer`, con ruoli `titolare` e `tatuatore`.
+- **Autenticazione**:
+  - **Password**: nella tabella `Users` c'è solo l'hash (`PasswordHasher` di ASP.NET Core), mai la password in chiaro. L'email è salvata in minuscolo.
+  - **Token**: il login restituisce un JWT firmato con `Jwt:SigningKey`, che contiene id, nome e ruolo (`titolare` o `tatuatore`) e dura `Jwt:LifetimeHours` ore (8). La chiave in `appsettings.Development.json` vale solo per lo sviluppo; in produzione va passata come segreto (`Jwt__SigningKey`, almeno 32 caratteri).
+  - **Logout**: salva l'id del token in `RevokedTokens`, e da quel momento il token viene rifiutato anche se non è scaduto.
+  - **Endpoint protetti**: per un endpoint autenticato si usa `.RequireAuthorization()`, per uno riservato al titolare `.RequireAuthorization(Roles.Titolare)`.
 
 ### Nuova migrazione
 
@@ -106,4 +116,4 @@ Il contratto è già definito dal frontend, che oggi lo simula su `localStorage`
 - **Regole di business da replicare** (vanno in `NasInk.Domain`): [`bookingRules.js`](../frontend/src/services/bookingRules.js) (conflitti di lettino, tatuatore e orari) e la validazione del sito in [`siteApi.mock.ts`](../frontend/src/api/site/siteApi.mock.ts).
 - **Comportamento atteso**: i test `../frontend/src/**/*.mock.test.ts`, da usare come base per i test del backend.
 
-Prossimi passi suggeriti: `POST /auth/login` e `GET /auth/me` con JWT (oggi il frontend riceve `404` su `/auth/me` e si comporta da utente non autenticato), poi `POST /uploads` (le immagini di riferimento del modulo), `GET /studio` e `PUT /site`.
+Prossimi passi suggeriti: `GET /studio` (dopo il login il gestionale mostra ancora "Risorsa non trovata."), poi `POST /uploads` (le immagini di riferimento del modulo) e `PUT /site`.

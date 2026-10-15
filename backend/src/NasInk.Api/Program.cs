@@ -1,9 +1,12 @@
 using System.Text.Json.Serialization;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
+using NasInk.Api.Auth;
 using NasInk.Api.Data;
 using NasInk.Api.Errors;
 using NasInk.Api.Requests;
 using NasInk.Api.Site;
+using NasInk.Domain.Users;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -22,6 +25,7 @@ var corsOrigins = builder.Configuration.GetSection("Cors:Origins").Get<string[]>
 builder.Services.AddCors(options => options.AddDefaultPolicy(policy =>
     policy.WithOrigins(corsOrigins).AllowAnyHeader().AllowAnyMethod()));
 
+builder.Services.AddNasInkAuth(builder.Configuration);
 builder.Services.AddRequestsRateLimit(builder.Configuration);
 builder.Services.AddSingleton(TimeProvider.System);
 
@@ -36,7 +40,7 @@ if (app.Environment.IsDevelopment())
     using var scope = app.Services.CreateScope();
     var db = scope.ServiceProvider.GetRequiredService<NasInkDbContext>();
     await db.Database.MigrateAsync();
-    await DbSeeder.SeedAsync(db);
+    await DbSeeder.SeedAsync(db, scope.ServiceProvider.GetRequiredService<IPasswordHasher<User>>());
 }
 
 // --- Pipeline HTTP ---
@@ -45,7 +49,10 @@ app.UseApiErrors();
 app.UseCors();
 // Dopo UseCors, così anche le risposte 429 hanno gli header CORS e il browser mostra il messaggio.
 app.UseRateLimiter();
+app.UseAuthentication();
+app.UseAuthorization();
 
+app.MapAuthEndpoints();
 app.MapSiteEndpoints();
 app.MapRequestsEndpoints();
 

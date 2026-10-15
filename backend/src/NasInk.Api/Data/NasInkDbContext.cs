@@ -4,6 +4,7 @@ using Microsoft.EntityFrameworkCore.ChangeTracking;
 using NasInk.Domain.Requests;
 using NasInk.Domain.Site;
 using NasInk.Domain.Studio;
+using NasInk.Domain.Users;
 
 namespace NasInk.Api.Data;
 
@@ -25,12 +26,21 @@ public sealed class SiteDocument
     public required SiteContent Content { get; set; }
 }
 
+/// <summary>Token JWT invalidati con il logout, tenuti finché non scadono da soli.</summary>
+public sealed class RevokedToken
+{
+    public required string TokenId { get; set; }
+    public DateTimeOffset ExpiresAt { get; set; }
+}
+
 public sealed class NasInkDbContext(DbContextOptions<NasInkDbContext> options) : DbContext(options)
 {
     public DbSet<Artist> Artists => Set<Artist>();
     public DbSet<StudioSettings> StudioSettings => Set<StudioSettings>();
     public DbSet<SiteDocument> SiteDocuments => Set<SiteDocument>();
     public DbSet<CustomerRequest> Requests => Set<CustomerRequest>();
+    public DbSet<User> Users => Set<User>();
+    public DbSet<RevokedToken> RevokedTokens => Set<RevokedToken>();
 
     private static readonly JsonSerializerOptions JsonOptions = new(JsonSerializerDefaults.Web);
 
@@ -54,6 +64,20 @@ public sealed class NasInkDbContext(DbContextOptions<NasInkDbContext> options) :
             // La fascia di consulenza è facoltativa: anche lei nella stessa tabella, con colonne nullable.
             request.OwnsOne(r => r.ConsultationSlot);
             // ReferenceImages (List<string>) diventa una colonna text[] di PostgreSQL, senza bisogno di configurarla.
+        });
+
+        modelBuilder.Entity<User>(user =>
+        {
+            user.Property(u => u.Id).HasMaxLength(64);
+            user.Property(u => u.Email).HasMaxLength(200);
+            user.HasIndex(u => u.Email).IsUnique();
+            user.Property(u => u.Role).HasMaxLength(16);
+        });
+
+        modelBuilder.Entity<RevokedToken>(token =>
+        {
+            token.HasKey(t => t.TokenId);
+            token.Property(t => t.TokenId).HasMaxLength(64);
         });
 
         // Le due colonne Hours_Start e Hours_End finiscono nella tabella StudioSettings.
