@@ -2,7 +2,14 @@
 
 API in .NET 10 che sostituisce, un endpoint alla volta, i mock del frontend.
 
-Oggi è implementato `GET /site/public` (home del sito vetrina). Gli altri endpoint del contratto sono ancora da fare.
+Endpoint implementati:
+
+| Metodo e percorso | Accesso | Note |
+|---|---|---|
+| `GET /site/public` | pubblico | contenuti del sito + tatuatori + orari |
+| `POST /requests` | pubblico per `source: "sito"` | validazione come `requestValidation.ts`, 400 con `fields`; `source: "gestionale"` risponde 401 finché non c'è il login; massimo 5 invii ogni 10 minuti per IP (429) |
+
+Gli altri endpoint del contratto sono ancora da fare.
 
 ## Requisiti
 
@@ -65,6 +72,7 @@ backend/
   src/NasInk.Api/              Minimal API, EF Core (Npgsql), CORS, formato degli errori
     Data/                      DbContext, seed, migrazioni
     Errors/                    { message, fields } per tutte le risposte di errore
+    Requests/                  endpoint /requests e limite anti-spam
     Site/                      endpoint /site
   tests/NasInk.Api.Tests/      xUnit + WebApplicationFactory + Testcontainers
 ```
@@ -75,6 +83,7 @@ Scelte principali:
 - **PostgreSQL + EF Core**: `SiteContent` è salvato in una colonna `jsonb`, perché si legge e si salva sempre tutto insieme. Tatuatori e orari stanno in tabelle normali, dato che li userà anche il gestionale.
 - **Errori**: per rispondere con un errore previsto, negli endpoint si lancia `ApiException(status, messaggio, campi)`. Le eccezioni impreviste diventano un `500` generico e le rotte inesistenti un `404`, sempre nel formato `{ "message": "..." }`.
 - **JSON**: camelCase, e i campi `null` vengono omessi, così i campi facoltativi TypeScript (`bio?: string`) arrivano come assenti.
+- **Anti-spam**: `POST /requests` usa il rate limiter di ASP.NET Core (finestra fissa per indirizzo IP). Si regola in `RateLimiting:PublicForm` (`PermitLimit`, `WindowMinutes`).
 - **Autenticazione (da fare)**: JWT in `Authorization: Bearer`, con ruoli `titolare` e `tatuatore`.
 
 ### Nuova migrazione
@@ -94,7 +103,7 @@ Il contratto è già definito dal frontend, che oggi lo simula su `localStorage`
 - **Endpoint e convenzioni** (JSON, `Authorization: Bearer`, formato degli errori con `message` e `fields`, status 400/401/403/404/409): sezione *Passare al backend vero* di [`../frontend/README.md`](../frontend/README.md).
 - **Forma dei dati**: [`../frontend/src/api/types.ts`](../frontend/src/api/types.ts).
 - **Dettaglio di ogni endpoint**: il commento in testa a ciascun `../frontend/src/api/*/*.http.ts`.
-- **Regole di business da replicare** (vanno in `NasInk.Domain`): [`bookingRules.js`](../frontend/src/services/bookingRules.js) (conflitti di lettino, tatuatore e orari), [`requestValidation.ts`](../frontend/src/api/requests/requestValidation.ts) e la validazione del sito in [`siteApi.mock.ts`](../frontend/src/api/site/siteApi.mock.ts).
+- **Regole di business da replicare** (vanno in `NasInk.Domain`): [`bookingRules.js`](../frontend/src/services/bookingRules.js) (conflitti di lettino, tatuatore e orari) e la validazione del sito in [`siteApi.mock.ts`](../frontend/src/api/site/siteApi.mock.ts).
 - **Comportamento atteso**: i test `../frontend/src/**/*.mock.test.ts`, da usare come base per i test del backend.
 
-Prossimi passi suggeriti: `POST /auth/login` e `GET /auth/me` con JWT (oggi il frontend riceve `404` su `/auth/me` e si comporta da utente non autenticato), poi `GET /studio` e `PUT /site`.
+Prossimi passi suggeriti: `POST /auth/login` e `GET /auth/me` con JWT (oggi il frontend riceve `404` su `/auth/me` e si comporta da utente non autenticato), poi `POST /uploads` (le immagini di riferimento del modulo), `GET /studio` e `PUT /site`.

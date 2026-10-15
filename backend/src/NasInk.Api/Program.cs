@@ -2,6 +2,7 @@ using System.Text.Json.Serialization;
 using Microsoft.EntityFrameworkCore;
 using NasInk.Api.Data;
 using NasInk.Api.Errors;
+using NasInk.Api.Requests;
 using NasInk.Api.Site;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -21,6 +22,9 @@ var corsOrigins = builder.Configuration.GetSection("Cors:Origins").Get<string[]>
 builder.Services.AddCors(options => options.AddDefaultPolicy(policy =>
     policy.WithOrigins(corsOrigins).AllowAnyHeader().AllowAnyMethod()));
 
+builder.Services.AddRequestsRateLimit(builder.Configuration);
+builder.Services.AddSingleton(TimeProvider.System);
+
 var app = builder.Build();
 
 // --- Database ---
@@ -39,8 +43,11 @@ if (app.Environment.IsDevelopment())
 
 app.UseApiErrors();
 app.UseCors();
+// Dopo UseCors, così anche le risposte 429 hanno gli header CORS e il browser mostra il messaggio.
+app.UseRateLimiter();
 
 app.MapSiteEndpoints();
+app.MapRequestsEndpoints();
 
 app.Run();
 

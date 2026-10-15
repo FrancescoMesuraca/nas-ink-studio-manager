@@ -1,6 +1,7 @@
 using System.Text.Json;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.ChangeTracking;
+using NasInk.Domain.Requests;
 using NasInk.Domain.Site;
 using NasInk.Domain.Studio;
 
@@ -29,6 +30,7 @@ public sealed class NasInkDbContext(DbContextOptions<NasInkDbContext> options) :
     public DbSet<Artist> Artists => Set<Artist>();
     public DbSet<StudioSettings> StudioSettings => Set<StudioSettings>();
     public DbSet<SiteDocument> SiteDocuments => Set<SiteDocument>();
+    public DbSet<CustomerRequest> Requests => Set<CustomerRequest>();
 
     private static readonly JsonSerializerOptions JsonOptions = new(JsonSerializerDefaults.Web);
 
@@ -39,6 +41,19 @@ public sealed class NasInkDbContext(DbContextOptions<NasInkDbContext> options) :
             artist.Property(a => a.Id).HasMaxLength(64);
             artist.Property(a => a.Name).HasMaxLength(120);
             artist.Property(a => a.Color).HasMaxLength(16);
+        });
+
+        modelBuilder.Entity<CustomerRequest>(request =>
+        {
+            request.Property(r => r.Id).HasMaxLength(64);
+            request.Property(r => r.Status).HasMaxLength(16);
+            request.Property(r => r.Source).HasMaxLength(16);
+            request.HasIndex(r => r.CreatedAt);
+            // La scheda di consulenza c'è sempre: le sue colonne (Consultation_Notes, …) stanno nella stessa tabella.
+            request.ComplexProperty(r => r.Consultation);
+            // La fascia di consulenza è facoltativa: anche lei nella stessa tabella, con colonne nullable.
+            request.OwnsOne(r => r.ConsultationSlot);
+            // ReferenceImages (List<string>) diventa una colonna text[] di PostgreSQL, senza bisogno di configurarla.
         });
 
         // Le due colonne Hours_Start e Hours_End finiscono nella tabella StudioSettings.

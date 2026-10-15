@@ -17,6 +17,9 @@ public sealed class ApiFactory : WebApplicationFactory<Program>, IAsyncLifetime
     {
         builder.UseEnvironment("Development");
         builder.UseSetting("ConnectionStrings:Default", _database.GetConnectionString());
+        // Nei test tutte le chiamate arrivano dallo stesso "IP": il limite anti-spam va alzato
+        // (il test che lo verifica lo abbassa di nuovo).
+        builder.UseSetting("RateLimiting:PublicForm:PermitLimit", "1000");
     }
 
     public Task InitializeAsync() => _database.StartAsync();

@@ -1,5 +1,6 @@
 using System.Text.Json;
 using Microsoft.EntityFrameworkCore;
+using NasInk.Domain.Requests;
 using NasInk.Domain.Site;
 using NasInk.Domain.Studio;
 
@@ -13,21 +14,25 @@ public static class DbSeeder
 {
     private static readonly JsonSerializerOptions JsonOptions = new(JsonSerializerDefaults.Web);
 
-    // Solo le parti di studio.json che servono oggi; prenotazioni e richieste arriveranno più avanti.
-    private sealed record StudioSeed(StudioHours Hours, List<ArtistSeed> Artists);
+    // Solo le parti di studio.json che servono oggi; sale e prenotazioni arriveranno più avanti.
+    private sealed record StudioSeed(StudioHours Hours, List<ArtistSeed> Artists, List<CustomerRequest> Requests);
     private sealed record ArtistSeed(string Id, string Name, string Color);
 
     public static async Task SeedAsync(NasInkDbContext db, CancellationToken cancellationToken = default)
     {
         var seedFolder = Path.Combine(AppContext.BaseDirectory, "Data", "Seed");
+        var studio = await ReadAsync<StudioSeed>(Path.Combine(seedFolder, "studio.json"), cancellationToken);
 
         if (!await db.StudioSettings.AnyAsync(cancellationToken))
         {
-            var studio = await ReadAsync<StudioSeed>(Path.Combine(seedFolder, "studio.json"), cancellationToken);
             db.StudioSettings.Add(new StudioSettings { Id = 1, Hours = studio.Hours });
             db.Artists.AddRange(studio.Artists.Select((artist, index) =>
                 new Artist { Id = artist.Id, Name = artist.Name, Color = artist.Color, Position = index }));
         }
+
+        // Controllo separato: i database creati prima della tabella Requests ricevono comunque le richieste demo.
+        if (!await db.Requests.AnyAsync(cancellationToken))
+            db.Requests.AddRange(studio.Requests);
 
         if (!await db.SiteDocuments.AnyAsync(cancellationToken))
         {
