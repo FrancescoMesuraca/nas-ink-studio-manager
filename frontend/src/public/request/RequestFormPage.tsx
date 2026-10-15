@@ -1,6 +1,7 @@
-import { useRef, useState, type ChangeEvent, type FormEvent, type ReactNode } from 'react'
+import { useRef, useState, type ChangeEvent, type FormEvent } from 'react'
 import { Link, useNavigate, useSearchParams } from 'react-router'
 import { ApiError, errorMessage, requestLimits, requestsApi, uploadsApi, validateNewRequest, type NewRequestInput, type RequestFieldErrors } from '../../api'
+import { ArtistSelect, Field, fieldAria } from '../../shared/ui'
 import { usePublicSite } from '../publicContext'
 import './request.css'
 
@@ -111,7 +112,7 @@ export default function RequestFormPage() {
         <fieldset>
           <legend>I tuoi dati</legend>
           <Field id="name" label="Nome e cognome" required error={errors.name}>
-            <input id="name" data-field="name" autoComplete="name" value={form.name} onChange={(e) => set('name', e.target.value)} {...invalid('name', errors.name)} />
+            <input id="name" data-field="name" autoComplete="name" value={form.name} onChange={(e) => set('name', e.target.value)} {...fieldAria('name', errors.name)} />
           </Field>
           <p className="request-hint" id="contact-hint">Lasciaci almeno un recapito: email o telefono.</p>
           <div className="request-two">
@@ -128,15 +129,15 @@ export default function RequestFormPage() {
         <fieldset>
           <legend>Il tatuaggio</legend>
           <Field id="description" label="Descrivi la tua idea" required error={errors.description} hint="Soggetto, significato, elementi che vorresti, colori o bianco e nero…">
-            <textarea id="description" data-field="description" rows={5} value={form.description} onChange={(e) => set('description', e.target.value)} {...invalid('description', errors.description, 'description-hint')} />
+            <textarea id="description" data-field="description" rows={5} value={form.description} onChange={(e) => set('description', e.target.value)} {...fieldAria('description', errors.description, 'description-hint')} />
           </Field>
           <div className="request-two">
             <Field id="bodyArea" label="Zona del corpo" required error={errors.bodyArea}>
-              <input id="bodyArea" data-field="bodyArea" list="body-areas" placeholder="Es. avambraccio sinistro" value={form.bodyArea} onChange={(e) => set('bodyArea', e.target.value)} {...invalid('bodyArea', errors.bodyArea)} />
+              <input id="bodyArea" data-field="bodyArea" list="body-areas" placeholder="Es. avambraccio sinistro" value={form.bodyArea} onChange={(e) => set('bodyArea', e.target.value)} {...fieldAria('bodyArea', errors.bodyArea)} />
               <datalist id="body-areas">{bodyAreas.map((area) => <option key={area} value={area} />)}</datalist>
             </Field>
             <Field id="size" label="Dimensioni indicative" required error={errors.size}>
-              <select id="size" data-field="size" value={form.size} onChange={(e) => set('size', e.target.value)} {...invalid('size', errors.size)}>
+              <select id="size" data-field="size" value={form.size} onChange={(e) => set('size', e.target.value)} {...fieldAria('size', errors.size)}>
                 <option value="">Scegli…</option>
                 {sizes.map((size) => <option key={size}>{size}</option>)}
               </select>
@@ -149,15 +150,12 @@ export default function RequestFormPage() {
               </select>
             </Field>
             {site.artists.length > 0 && <Field id="artist" label="Tatuatore preferito">
-              <select id="artist" value={form.preferredArtistId} onChange={(e) => set('preferredArtistId', e.target.value)}>
-                <option value="">Nessuna preferenza</option>
-                {site.artists.map((artist) => <option key={artist.id} value={artist.id}>{artist.name}</option>)}
-              </select>
+              <ArtistSelect id="artist" artists={site.artists} emptyLabel="Nessuna preferenza" value={form.preferredArtistId} onChange={(artistId) => set('preferredArtistId', artistId)} />
             </Field>}
           </div>
 
-          <div className="request-field">
-            <span className="request-label" id="images-label">Immagini di riferimento <small>(facoltative, fino a {requestLimits.maxReferenceImages})</small></span>
+          <div className="field">
+            <span className="field-label" id="images-label">Immagini di riferimento <small>(facoltative, fino a {requestLimits.maxReferenceImages})</small></span>
             <div className="request-images" aria-labelledby="images-label">
               {images.map((url, index) => <figure key={index}>
                 <img src={url} alt={'Riferimento ' + (index + 1)} />
@@ -179,7 +177,7 @@ export default function RequestFormPage() {
 
         <div className={'request-consent' + (errors.privacyConsent ? ' has-error' : '')}>
           <label>
-            <input type="checkbox" data-field="privacyConsent" checked={form.privacyConsent} onChange={(e) => set('privacyConsent', e.target.checked)} {...invalid('privacyConsent', errors.privacyConsent)} />
+            <input type="checkbox" data-field="privacyConsent" checked={form.privacyConsent} onChange={(e) => set('privacyConsent', e.target.checked)} {...fieldAria('privacyConsent', errors.privacyConsent)} />
             <span>Ho letto l’<Link to="/privacy" target="_blank">informativa privacy</Link> e acconsento al trattamento dei miei dati per essere ricontattato su questa richiesta. <abbr title="obbligatorio">*</abbr></span>
           </label>
           {errors.privacyConsent && <p className="request-error" id="privacyConsent-error">{errors.privacyConsent}</p>}
@@ -194,22 +192,8 @@ export default function RequestFormPage() {
   </section>
 }
 
-function invalid(id: string, error?: string, hint?: string) {
-  const describedBy = [hint, error ? id + '-error' : undefined].filter(Boolean).join(' ')
-  return { 'aria-invalid': error ? true : undefined, 'aria-describedby': describedBy || undefined }
-}
-
 /** Email e telefono condividono l'errore "almeno un recapito". */
 function contactProps(id: 'email' | 'phone', errors: RequestFieldErrors) {
   const describedBy = ['contact-hint', errors[id] ? id + '-error' : undefined, errors.contact ? 'contact-error' : undefined].filter(Boolean).join(' ')
   return { 'aria-invalid': errors[id] || errors.contact ? true : undefined, 'aria-describedby': describedBy }
-}
-
-function Field({ id, label, required, error, hint, children }: { id: string; label: string; required?: boolean; error?: string; hint?: string; children: ReactNode }) {
-  return <div className={'request-field' + (error ? ' has-error' : '')}>
-    <label className="request-label" htmlFor={id}>{label}{required && <> <abbr title="obbligatorio">*</abbr></>}</label>
-    {hint && <p className="request-hint" id={id + '-hint'}>{hint}</p>}
-    {children}
-    {error && <p className="request-error" id={id + '-error'}>{error}</p>}
-  </div>
 }

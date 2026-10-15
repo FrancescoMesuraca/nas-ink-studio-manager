@@ -101,7 +101,6 @@
 .site-gallery img { width: 100%; aspect-ratio: 4 / 5; object-fit: cover; border-radius: 10px; background: var(--site-raised); }
 .site-gallery figcaption { display: grid; gap: 2px; padding: 8px 2px 4px; font-size: .86rem; line-height: 1.35; }
 .site-gallery figcaption small, .site-artist small { display: flex; align-items: center; gap: 6px; color: var(--site-muted); font-size: .78rem; }
-.site-gallery i { width: 8px; height: 8px; border-radius: 50%; flex: none; }
 
 .site-artists { display: grid; gap: 14px; }
 .site-artist { display: grid; grid-template-columns: 72px 1fr; column-gap: 16px; align-items: start; padding: 18px; border: 1px solid var(--site-line); border-radius: var(--site-radius); background: var(--site-surface); }

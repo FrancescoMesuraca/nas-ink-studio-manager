@@ -1,16 +1,18 @@
 import type { ReactNode } from 'react'
 import { Link } from 'react-router'
 import type { PublicSite, SiteSectionId } from '../api'
-import { hoursText, initials, instagramUrl, sectionMeta, visibleSections } from './siteSections'
+import { ArtistDot, EmailLink, PhoneLink } from '../shared/ui'
+import { galleryItems, hoursText, initials, instagramUrl, sectionMeta, visibleSections } from './siteSections'
 
 /** Contenuto della home: usato dalla pagina pubblica e dall'anteprima dell'editor. */
 export default function HomeSections({ site }: { site: PublicSite }) {
   const { content } = site
   const sections = visibleSections(site)
-  const showGallery = sections.some((section) => section.id === 'gallery') && content.gallery.length > 0
+  const hasGallery = galleryItems(site).length > 0
+  const showGallery = hasGallery && sections.some((section) => section.id === 'gallery')
   const render: Record<SiteSectionId, () => ReactNode> = {
     about: () => <About site={site} />,
-    gallery: () => content.gallery.length > 0 && <Gallery site={site} />,
+    gallery: () => hasGallery && <Gallery site={site} />,
     artists: () => <Artists site={site} />,
     contacts: () => <Contacts site={site} />,
   }
@@ -59,13 +61,13 @@ function Gallery({ site }: { site: PublicSite }) {
       <h2>Lavori</h2>
       <p className="site-section-lead">Alcuni progetti realizzati in studio. Ogni tatuaggio è disegnato su misura.</p>
       <div className="site-gallery">
-        {site.content.gallery.map((item) => {
+        {galleryItems(site).map((item) => {
           const artist = item.artistId ? artists.get(item.artistId) : undefined
           return <figure key={item.id}>
             <img src={item.imageUrl} alt={item.caption || 'Tatuaggio realizzato in studio'} loading="lazy" />
             {(item.caption || artist) && <figcaption>
               {item.caption && <span>{item.caption}</span>}
-              {artist && <small><i style={{ background: artist.color }} />{artist.name}</small>}
+              {artist && <small><ArtistDot color={artist.color} size={8} />{artist.name}</small>}
             </figcaption>}
           </figure>
         })}
@@ -104,8 +106,8 @@ function Contacts({ site }: { site: PublicSite }) {
       <dl className="site-contacts">
         {contacts.address && <div><dt>Indirizzo</dt><dd>{contacts.address}{contacts.mapUrl && <> · <a href={contacts.mapUrl} target="_blank" rel="noreferrer">Apri la mappa</a></>}</dd></div>}
         <div><dt>Orari</dt><dd>{hoursText(site)}</dd></div>
-        {contacts.phone && <div><dt>Telefono</dt><dd><a href={'tel:' + contacts.phone.replace(/\s+/g, '')}>{contacts.phone}</a></dd></div>}
-        {contacts.email && <div><dt>Email</dt><dd><a href={'mailto:' + contacts.email}>{contacts.email}</a></dd></div>}
+        {contacts.phone && <div><dt>Telefono</dt><dd><PhoneLink phone={contacts.phone} /></dd></div>}
+        {contacts.email && <div><dt>Email</dt><dd><EmailLink email={contacts.email} /></dd></div>}
         {contacts.instagram && <div><dt>Instagram</dt><dd><a href={instagramUrl(contacts.instagram)} target="_blank" rel="noreferrer">@{contacts.instagram.replace(/^@/, '')}</a></dd></div>}
       </dl>
     </div>

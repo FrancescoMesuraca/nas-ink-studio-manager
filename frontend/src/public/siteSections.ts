@@ -11,6 +11,9 @@ export const sectionMeta: Record<SiteSectionId, { anchor: string; label: string 
 export const visibleSections = (site: PublicSite) =>
   site.content.sections.filter((section) => section.visible && (section.id !== 'artists' || site.artists.length > 0))
 
+/** Foto della galleria da mostrare: nell'anteprima dell'editor può esserci una foto appena aggiunta, ancora senza immagine. */
+export const galleryItems = (site: PublicSite) => site.content.gallery.filter((item) => item.imageUrl)
+
 export const hoursText = (site: PublicSite) => 'Su appuntamento, ' + site.hours.start + '–' + site.hours.end
 
 export const instagramUrl = (handle: string) => 'https://www.instagram.com/' + encodeURIComponent(handle.replace(/^@/, '')) + '/'

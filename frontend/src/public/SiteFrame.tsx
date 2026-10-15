@@ -1,6 +1,7 @@
 import { useState, type ReactNode } from 'react'
 import { Link } from 'react-router'
 import type { PublicSite } from '../api'
+import { EmailLink, PhoneLink } from '../shared/ui'
 import { hoursText, instagramUrl, sectionMeta, visibleSections } from './siteSections'
 import { themeVars } from './theme'
 import './site.css'
@@ -44,8 +45,8 @@ export default function SiteFrame({ site, preview = false, children }: { site: P
           <p>{hoursText(site)}</p>
         </div>
         <div className="site-footer-links">
-          {content.contacts.phone && <a href={'tel:' + content.contacts.phone.replace(/\s+/g, '')}>{content.contacts.phone}</a>}
-          {content.contacts.email && <a href={'mailto:' + content.contacts.email}>{content.contacts.email}</a>}
+          {content.contacts.phone && <PhoneLink phone={content.contacts.phone} />}
+          {content.contacts.email && <EmailLink email={content.contacts.email} />}
           {content.contacts.instagram && <a href={instagramUrl(content.contacts.instagram)} target="_blank" rel="noreferrer">Instagram @{content.contacts.instagram.replace(/^@/, '')}</a>}
         </div>
         <div className="site-footer-links">

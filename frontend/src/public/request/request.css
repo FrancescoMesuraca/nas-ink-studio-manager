@@ -5,12 +5,11 @@
 .request-form fieldset { margin: 0; padding: 20px 16px; border: 1px solid var(--site-line); border-radius: var(--site-radius); background: var(--site-surface); display: grid; gap: 16px; min-width: 0; }
 .request-form legend { padding: 0 6px; margin-left: -6px; font-family: var(--site-font-heading); font-weight: var(--site-heading-weight); text-transform: var(--site-heading-transform); font-size: 1.15rem; }
 .request-two { display: grid; gap: 16px; }
-.request-field { display: grid; gap: 6px; min-width: 0; }
-.request-label { font-weight: 650; font-size: .95rem; }
-.request-label small { font-weight: 400; color: var(--site-muted); }
+.request-form .field-label { font-weight: 650; font-size: .95rem; }
+.request-form .field-label small { font-weight: 400; color: var(--site-muted); }
 .request-form abbr { color: var(--site-accent); text-decoration: none; }
-.site .request-hint { color: var(--site-muted); font-size: .85rem; margin: -2px 0 0; }
-.site .request-error { color: var(--site-error); font-size: .88rem; font-weight: 600; margin: 0; }
+.site .request-hint, .site .field-hint { color: var(--site-muted); font-size: .85rem; margin: -2px 0 0; }
+.site .request-error, .site .field-error { color: var(--site-error); font-size: .88rem; font-weight: 600; margin: 0; }
 
 .request-form input:not([type="checkbox"]), .request-form select, .request-form textarea {
   width: 100%; min-height: 48px; padding: 11px 12px; border-radius: 10px;
