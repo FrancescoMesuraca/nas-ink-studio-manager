@@ -1,3 +1,4 @@
+using System.Globalization;
 using System.Text.Json;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
@@ -22,10 +23,12 @@ public static class DbSeeder
     private sealed record ArtistSeed(string Id, string Name, string Color);
     private sealed record UserSeed(string Id, string Name, string Email, string Password, string Role, string? ArtistId);
 
-    public static async Task SeedAsync(NasInkDbContext db, IPasswordHasher<User> passwordHasher, CancellationToken cancellationToken = default)
+    /// <param name="today">Giorno corrente nel fuso dello studio: le prenotazioni demo vengono spostate a partire da qui.</param>
+    public static async Task SeedAsync(NasInkDbContext db, IPasswordHasher<User> passwordHasher, DateOnly today, CancellationToken cancellationToken = default)
     {
         var seedFolder = Path.Combine(AppContext.BaseDirectory, "Data", "Seed");
         var studio = await ReadAsync<StudioSeed>(Path.Combine(seedFolder, "studio.json"), cancellationToken);
+        ShiftToToday(studio, today);
 
         if (!await db.StudioSettings.AnyAsync(cancellationToken))
         {
@@ -69,6 +72,23 @@ public static class DbSeeder
         }
 
         await db.SaveChangesAsync(cancellationToken);
+    }
+
+    /// <summary>
+    /// Le date demo in studio.json sono fisse (es. 2026-09-27). Le spostiamo tutte degli stessi giorni,
+    /// così il primo giorno con prenotazioni diventa oggi e l'agenda appena aperta non è vuota.
+    /// Anche le fasce di consulenza si spostano, per restare coerenti con le prenotazioni.
+    /// </summary>
+    private static void ShiftToToday(StudioSeed studio, DateOnly today)
+    {
+        if (studio.Bookings.Count == 0) return;
+        var firstDay = studio.Bookings.Min(booking => DateOnly.ParseExact(booking.Date, "yyyy-MM-dd", CultureInfo.InvariantCulture));
+        var days = today.DayNumber - firstDay.DayNumber;
+        string Shift(string date) => DateOnly.ParseExact(date, "yyyy-MM-dd", CultureInfo.InvariantCulture).AddDays(days).ToString("yyyy-MM-dd", CultureInfo.InvariantCulture);
+
+        foreach (var booking in studio.Bookings) booking.Date = Shift(booking.Date);
+        foreach (var request in studio.Requests.Where(request => request.ConsultationSlot is not null))
+            request.ConsultationSlot = request.ConsultationSlot! with { Date = Shift(request.ConsultationSlot.Date) };
     }
 
     private static async Task<T> ReadAsync<T>(string path, CancellationToken cancellationToken)

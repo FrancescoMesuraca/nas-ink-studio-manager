@@ -29,6 +29,7 @@ builder.Services.AddCors(options => options.AddDefaultPolicy(policy =>
 builder.Services.AddNasInkAuth(builder.Configuration);
 builder.Services.AddRequestsRateLimit(builder.Configuration);
 builder.Services.AddSingleton(TimeProvider.System);
+builder.Services.AddSingleton<StudioClock>();
 
 var app = builder.Build();
 
@@ -41,7 +42,8 @@ if (app.Environment.IsDevelopment())
     using var scope = app.Services.CreateScope();
     var db = scope.ServiceProvider.GetRequiredService<NasInkDbContext>();
     await db.Database.MigrateAsync();
-    await DbSeeder.SeedAsync(db, scope.ServiceProvider.GetRequiredService<IPasswordHasher<User>>());
+    await DbSeeder.SeedAsync(db, scope.ServiceProvider.GetRequiredService<IPasswordHasher<User>>(),
+        scope.ServiceProvider.GetRequiredService<StudioClock>().Today());
 }
 
 // --- Pipeline HTTP ---

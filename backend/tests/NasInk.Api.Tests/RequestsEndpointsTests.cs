@@ -102,8 +102,10 @@ public sealed class RequestsEndpointsTests(ApiFactory factory) : IClassFixture<A
         var db = scope.ServiceProvider.GetRequiredService<NasInkDbContext>();
 
         var giulia = await db.Requests.SingleAsync(request => request.Id == "request-1");
+        // Il seed sposta le date demo sul giorno corrente: la consulenza resta nel giorno delle prenotazioni demo.
+        var demoDay = (await db.Bookings.SingleAsync(booking => booking.Id == "booking-1")).Date;
 
         Assert.Equal("Drago giapponese", giulia.Consultation.Subject);
-        Assert.Equal(new ConsultationSlot("artist-1", "2026-09-27", "09:00", "09:30", "confermata"), giulia.ConsultationSlot);
+        Assert.Equal(new ConsultationSlot("artist-1", demoDay, "09:00", "09:30", "confermata"), giulia.ConsultationSlot);
     }
 }
