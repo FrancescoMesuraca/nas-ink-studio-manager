@@ -67,7 +67,7 @@ VITE_USE_MOCKS=false
 VITE_API_URL=http://localhost:5080
 ```
 
-Poi riavvia `npm run dev`, perché Vite legge le variabili d'ambiente solo all'avvio. L'API accetta richieste CORS dalle origini in `Cors:Origins` di `appsettings.Development.json` (oggi `http://localhost:5173`). Se Vite parte su un'altra porta, aggiungila lì oppure con una variabile d'ambiente, ad esempio `Cors__Origins__1=http://localhost:5174`.
+Poi riavvia `npm run dev`, perché Vite legge le variabili d'ambiente solo all'avvio. CORS: in sviluppo l'API accetta richieste da qualunque indirizzo locale (`localhost`, `127.0.0.1`, su qualsiasi porta), quindi funziona anche quando Vite passa a 5174 o 5175 perché la 5173 è occupata. Fuori dallo sviluppo sono ammesse solo le origini elencate in `Cors:Origins`.
 
 ## Struttura
 

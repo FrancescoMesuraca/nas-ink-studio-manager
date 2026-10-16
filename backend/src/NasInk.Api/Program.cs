@@ -21,10 +21,15 @@ builder.Services.AddDbContext<NasInkDbContext>(options =>
 builder.Services.ConfigureHttpJsonOptions(options =>
     options.SerializerOptions.DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull);
 
-// CORS: il frontend in sviluppo gira su un'altra origine (Vite, http://localhost:5173).
+// CORS: il frontend gira su un'altra origine. In produzione sono ammesse solo quelle in Cors:Origins;
+// in sviluppo qualunque indirizzo locale, perché Vite passa a 5174, 5175… se la porta 5173 è occupata.
 var corsOrigins = builder.Configuration.GetSection("Cors:Origins").Get<string[]>() ?? [];
-builder.Services.AddCors(options => options.AddDefaultPolicy(policy =>
-    policy.WithOrigins(corsOrigins).AllowAnyHeader().AllowAnyMethod()));
+var allowAnyLocalOrigin = builder.Environment.IsDevelopment();
+builder.Services.AddCors(options => options.AddDefaultPolicy(policy => policy
+    .SetIsOriginAllowed(origin => corsOrigins.Contains(origin)
+        || (allowAnyLocalOrigin && Uri.TryCreate(origin, UriKind.Absolute, out var uri) && uri.IsLoopback))
+    .AllowAnyHeader()
+    .AllowAnyMethod()));
 
 builder.Services.AddNasInkAuth(builder.Configuration);
 builder.Services.AddRequestsRateLimit(builder.Configuration);
