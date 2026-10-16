@@ -10,6 +10,7 @@ Endpoint implementati:
 | `GET /auth/me` | autenticato | utente del token; 401 se manca, è scaduto o revocato |
 | `POST /auth/logout` | autenticato | revoca il token (204) |
 | `GET /site/public` | pubblico | contenuti del sito + tatuatori + orari |
+| `GET /studio` | autenticato | `StudioData`: orari, sale con lettini, tatuatori, prenotazioni e richieste |
 | `POST /requests` | pubblico per `source: "sito"`, autenticato per `"gestionale"` | validazione come `requestValidation.ts`, 400 con `fields`; 401 per `"gestionale"` senza login; massimo 5 invii ogni 10 minuti per IP (429) |
 
 Utenti demo (da `src/NasInk.Api/Data/Seed/users.json`, password `demo1234`): `titolare@nasink.demo` (titolare), `maya@nasink.demo` e `luca@nasink.demo` (tatuatori).
@@ -80,13 +81,14 @@ backend/
     Errors/                    { message, fields } per tutte le risposte di errore
     Requests/                  endpoint /requests e limite anti-spam
     Site/                      endpoint /site
+    Studio/                    endpoint /studio (gestionale)
   tests/NasInk.Api.Tests/      xUnit + WebApplicationFactory + Testcontainers
 ```
 
 Scelte principali:
 
 - **Minimal API**: un file `*Endpoints.cs` per area, come `frontend/src/api/<area>/`.
-- **PostgreSQL + EF Core**: `SiteContent` è salvato in una colonna `jsonb`, perché si legge e si salva sempre tutto insieme. Tatuatori e orari stanno in tabelle normali, dato che li userà anche il gestionale.
+- **PostgreSQL + EF Core**: `SiteContent` è salvato in una colonna `jsonb`, perché si legge e si salva sempre tutto insieme. Tatuatori e orari stanno in tabelle normali, dato che li userà anche il gestionale. Sale, lettini e prenotazioni hanno chiavi esterne: un lettino o un tatuatore con prenotazioni non si può eliminare (vincolo `Restrict`, da tradurre in 409). Date e orari restano stringhe `yyyy-MM-dd` e `HH:mm` come nel contratto.
 - **Errori**: per rispondere con un errore previsto, negli endpoint si lancia `ApiException(status, messaggio, campi)`. Le eccezioni impreviste diventano un `500` generico e le rotte inesistenti un `404`, sempre nel formato `{ "message": "..." }`.
 - **JSON**: camelCase, e i campi `null` vengono omessi, così i campi facoltativi TypeScript (`bio?: string`) arrivano come assenti.
 - **Anti-spam**: `POST /requests` usa il rate limiter di ASP.NET Core (finestra fissa per indirizzo IP). Si regola in `RateLimiting:PublicForm` (`PermitLimit`, `WindowMinutes`).
@@ -116,4 +118,4 @@ Il contratto è già definito dal frontend, che oggi lo simula su `localStorage`
 - **Regole di business da replicare** (vanno in `NasInk.Domain`): [`bookingRules.js`](../frontend/src/services/bookingRules.js) (conflitti di lettino, tatuatore e orari) e la validazione del sito in [`siteApi.mock.ts`](../frontend/src/api/site/siteApi.mock.ts).
 - **Comportamento atteso**: i test `../frontend/src/**/*.mock.test.ts`, da usare come base per i test del backend.
 
-Prossimi passi suggeriti: `GET /studio` (dopo il login il gestionale mostra ancora "Risorsa non trovata."), poi `POST /uploads` (le immagini di riferimento del modulo) e `PUT /site`.
+Prossimi passi suggeriti: le modifiche del gestionale (prenotazioni con le regole di `bookingRules.js`, configurazione dello studio, gestione delle richieste), poi `POST /uploads` (le immagini di riferimento del modulo) e `PUT /site`. Oggi il gestionale si apre con i dati del backend, ma a parte "Nuova richiesta" i salvataggi rispondono 404.

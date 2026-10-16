@@ -6,6 +6,7 @@ using NasInk.Api.Data;
 using NasInk.Api.Errors;
 using NasInk.Api.Requests;
 using NasInk.Api.Site;
+using NasInk.Api.Studio;
 using NasInk.Domain.Users;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -55,6 +56,7 @@ app.UseAuthorization();
 app.MapAuthEndpoints();
 app.MapSiteEndpoints();
 app.MapRequestsEndpoints();
+app.MapStudioEndpoints();
 
 app.Run();
 

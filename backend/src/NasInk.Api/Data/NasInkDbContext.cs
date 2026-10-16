@@ -37,6 +37,9 @@ public sealed class NasInkDbContext(DbContextOptions<NasInkDbContext> options) :
 {
     public DbSet<Artist> Artists => Set<Artist>();
     public DbSet<StudioSettings> StudioSettings => Set<StudioSettings>();
+    public DbSet<Room> Rooms => Set<Room>();
+    public DbSet<Bed> Beds => Set<Bed>();
+    public DbSet<Booking> Bookings => Set<Booking>();
     public DbSet<SiteDocument> SiteDocuments => Set<SiteDocument>();
     public DbSet<CustomerRequest> Requests => Set<CustomerRequest>();
     public DbSet<User> Users => Set<User>();
@@ -64,6 +67,33 @@ public sealed class NasInkDbContext(DbContextOptions<NasInkDbContext> options) :
             // La fascia di consulenza è facoltativa: anche lei nella stessa tabella, con colonne nullable.
             request.OwnsOne(r => r.ConsultationSlot);
             // ReferenceImages (List<string>) diventa una colonna text[] di PostgreSQL, senza bisogno di configurarla.
+        });
+
+        modelBuilder.Entity<Room>(room =>
+        {
+            room.Property(r => r.Id).HasMaxLength(64);
+            room.Property(r => r.Name).HasMaxLength(120);
+            // Eliminando una sala si eliminano anche i suoi lettini.
+            room.HasMany(r => r.Beds).WithOne().HasForeignKey(b => b.RoomId).OnDelete(DeleteBehavior.Cascade);
+        });
+
+        modelBuilder.Entity<Bed>(bed =>
+        {
+            bed.Property(b => b.Id).HasMaxLength(64);
+            bed.Property(b => b.Name).HasMaxLength(120);
+        });
+
+        modelBuilder.Entity<Booking>(booking =>
+        {
+            booking.Property(b => b.Id).HasMaxLength(64);
+            booking.Property(b => b.Date).HasMaxLength(10);
+            booking.Property(b => b.Start).HasMaxLength(5);
+            booking.Property(b => b.End).HasMaxLength(5);
+            booking.HasIndex(b => b.Date);
+            // Un lettino o un tatuatore con prenotazioni non si può eliminare (Restrict):
+            // l'API dovrà rispondere 409, come il mock.
+            booking.HasOne<Bed>().WithMany().HasForeignKey(b => b.BedId).OnDelete(DeleteBehavior.Restrict);
+            booking.HasOne<Artist>().WithMany().HasForeignKey(b => b.ArtistId).OnDelete(DeleteBehavior.Restrict);
         });
 
         modelBuilder.Entity<User>(user =>

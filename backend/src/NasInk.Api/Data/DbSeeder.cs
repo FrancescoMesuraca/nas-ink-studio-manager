@@ -16,8 +16,9 @@ public static class DbSeeder
 {
     private static readonly JsonSerializerOptions JsonOptions = new(JsonSerializerDefaults.Web);
 
-    // Solo le parti di studio.json che servono oggi; sale e prenotazioni arriveranno più avanti.
-    private sealed record StudioSeed(StudioHours Hours, List<ArtistSeed> Artists, List<CustomerRequest> Requests);
+    private sealed record StudioSeed(StudioHours Hours, List<RoomSeed> Rooms, List<ArtistSeed> Artists, List<Booking> Bookings, List<CustomerRequest> Requests);
+    private sealed record RoomSeed(string Id, string Name, List<BedSeed> Beds);
+    private sealed record BedSeed(string Id, string Name);
     private sealed record ArtistSeed(string Id, string Name, string Color);
     private sealed record UserSeed(string Id, string Name, string Email, string Password, string Role, string? ArtistId);
 
@@ -33,7 +34,19 @@ public static class DbSeeder
                 new Artist { Id = artist.Id, Name = artist.Name, Color = artist.Color, Position = index }));
         }
 
-        // Controllo separato: i database creati prima della tabella Requests ricevono comunque le richieste demo.
+        // Controlli separati per tabella: i database creati prima di una tabella ricevono comunque i suoi dati demo.
+        if (!await db.Rooms.AnyAsync(cancellationToken))
+        {
+            db.Rooms.AddRange(studio.Rooms.Select((room, roomIndex) => new Room
+            {
+                Id = room.Id,
+                Name = room.Name,
+                Position = roomIndex,
+                Beds = room.Beds.Select((bed, bedIndex) => new Bed { Id = bed.Id, Name = bed.Name, Position = bedIndex }).ToList(),
+            }));
+            db.Bookings.AddRange(studio.Bookings);
+        }
+
         if (!await db.Requests.AnyAsync(cancellationToken))
             db.Requests.AddRange(studio.Requests);
 
