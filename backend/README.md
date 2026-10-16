@@ -58,6 +58,26 @@ dotnet test
 
 I test avviano l'API in memoria (`WebApplicationFactory`) con un PostgreSQL usa e getta creato da [Testcontainers](https://dotnet.testcontainers.org/), quindi non toccano il database di sviluppo.
 
+## Formattazione
+
+Il codice C# è formattato con [CSharpier](https://csharpier.com/), installato come strumento locale (`../.config/dotnet-tools.json`). La prima volta:
+
+```bash
+dotnet tool restore
+```
+
+Per formattare il backend, oppure solo controllare che sia già formattato (utile prima di un commit):
+
+```bash
+dotnet csharpier format .
+```
+
+```bash
+dotnet csharpier check .
+```
+
+Le migrazioni generate da EF Core sono escluse (`.csharpierignore`).
+
 ## Collegare il frontend
 
 In `frontend/.env.local`:

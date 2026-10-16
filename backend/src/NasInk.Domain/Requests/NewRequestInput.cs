@@ -21,6 +21,7 @@ public sealed partial record NewRequestInput
     public List<string>? ReferenceImages { get; init; }
     public string? Availability { get; init; }
     public string? Source { get; init; }
+
     /// <summary>Obbligatorio (true) per le richieste dal sito.</summary>
     public bool? PrivacyConsent { get; init; }
 
@@ -37,22 +38,34 @@ public sealed partial record NewRequestInput
         var description = Clean(Description);
         var fromSite = Source == RequestSource.Sito;
 
-        if (name == "") errors["name"] = "Inserisci il tuo nome.";
-        else if (name.Length > 100) errors["name"] = "Il nome è troppo lungo.";
-        if (email != "" && !EmailPattern().IsMatch(email)) errors["email"] = "Controlla l’indirizzo email.";
+        if (name == "")
+            errors["name"] = "Inserisci il tuo nome.";
+        else if (name.Length > 100)
+            errors["name"] = "Il nome è troppo lungo.";
+        if (email != "" && !EmailPattern().IsMatch(email))
+            errors["email"] = "Controlla l’indirizzo email.";
         if (phone != "" && (!PhonePattern().IsMatch(phone) || phone.Count(char.IsAsciiDigit) < 6))
             errors["phone"] = "Controlla il numero di telefono.";
         if (Clean(Contact) == "" && email == "" && phone == "")
-            errors["contact"] = fromSite ? "Lasciaci almeno un recapito: email o telefono." : "Inserisci un contatto.";
-        if (description == "") errors["description"] = "Descrivi la tua idea.";
-        else if (fromSite && description.Length < 10) errors["description"] = "Raccontaci qualcosa in più (almeno 10 caratteri).";
-        if (Clean(BodyArea) == "") errors["bodyArea"] = "Indica la zona del corpo.";
-        if (Clean(Size) == "") errors["size"] = "Indica le dimensioni indicative.";
-        if (Clean(Style) == "") errors["style"] = "Indica lo stile (anche “Non so”).";
+            errors["contact"] = fromSite
+                ? "Lasciaci almeno un recapito: email o telefono."
+                : "Inserisci un contatto.";
+        if (description == "")
+            errors["description"] = "Descrivi la tua idea.";
+        else if (fromSite && description.Length < 10)
+            errors["description"] = "Raccontaci qualcosa in più (almeno 10 caratteri).";
+        if (Clean(BodyArea) == "")
+            errors["bodyArea"] = "Indica la zona del corpo.";
+        if (Clean(Size) == "")
+            errors["size"] = "Indica le dimensioni indicative.";
+        if (Clean(Style) == "")
+            errors["style"] = "Indica lo stile (anche “Non so”).";
         if ((ReferenceImages?.Count ?? 0) > RequestLimits.MaxReferenceImages)
-            errors["referenceImages"] = "Puoi allegare al massimo " + RequestLimits.MaxReferenceImages + " immagini.";
+            errors["referenceImages"] =
+                "Puoi allegare al massimo " + RequestLimits.MaxReferenceImages + " immagini.";
         if (fromSite && PrivacyConsent != true)
-            errors["privacyConsent"] = "Per inviare la richiesta devi accettare l’informativa privacy.";
+            errors["privacyConsent"] =
+                "Per inviare la richiesta devi accettare l’informativa privacy.";
         return errors;
     }
 
@@ -65,7 +78,8 @@ public sealed partial record NewRequestInput
         var email = Optional(Email);
         var phone = Optional(Phone);
         var contact = Clean(Contact);
-        if (contact == "") contact = string.Join(" · ", new[] { email, phone }.Where(value => value is not null));
+        if (contact == "")
+            contact = string.Join(" · ", new[] { email, phone }.Where(value => value is not null));
 
         return new CustomerRequest
         {
@@ -91,11 +105,14 @@ public sealed partial record NewRequestInput
     }
 
     private static string Clean(string? value) => value?.Trim() ?? "";
-    private static string? Optional(string? value) => string.IsNullOrWhiteSpace(value) ? null : value.Trim();
+
+    private static string? Optional(string? value) =>
+        string.IsNullOrWhiteSpace(value) ? null : value.Trim();
 
     // Stesse espressioni del frontend; [0-9] al posto di \d perché in .NET \d accetta anche cifre non latine.
     [GeneratedRegex(@"^[^\s@]+@[^\s@]+\.[^\s@]{2,}$")]
     private static partial Regex EmailPattern();
+
     [GeneratedRegex(@"^\+?[0-9\s().-]{6,20}$")]
     private static partial Regex PhonePattern();
 }

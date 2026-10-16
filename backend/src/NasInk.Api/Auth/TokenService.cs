@@ -34,18 +34,24 @@ public sealed class TokenService(IOptions<JwtOptions> options, TimeProvider cloc
             [AuthClaims.Name] = user.Name,
             [AuthClaims.Role] = user.Role,
         };
-        if (user.ArtistId is not null) claims[AuthClaims.ArtistId] = user.ArtistId;
+        if (user.ArtistId is not null)
+            claims[AuthClaims.ArtistId] = user.ArtistId;
 
         var now = clock.GetUtcNow().UtcDateTime;
-        return _handler.CreateToken(new SecurityTokenDescriptor
-        {
-            Issuer = jwt.Issuer,
-            Audience = jwt.Audience,
-            Claims = claims,
-            IssuedAt = now,
-            NotBefore = now,
-            Expires = now.AddHours(jwt.LifetimeHours),
-            SigningCredentials = new SigningCredentials(jwt.GetSecurityKey(), SecurityAlgorithms.HmacSha256),
-        });
+        return _handler.CreateToken(
+            new SecurityTokenDescriptor
+            {
+                Issuer = jwt.Issuer,
+                Audience = jwt.Audience,
+                Claims = claims,
+                IssuedAt = now,
+                NotBefore = now,
+                Expires = now.AddHours(jwt.LifetimeHours),
+                SigningCredentials = new SigningCredentials(
+                    jwt.GetSecurityKey(),
+                    SecurityAlgorithms.HmacSha256
+                ),
+            }
+        );
     }
 }

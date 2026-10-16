@@ -14,22 +14,34 @@ var builder = WebApplication.CreateBuilder(args);
 // --- Servizi ---
 
 builder.Services.AddDbContext<NasInkDbContext>(options =>
-    options.UseNpgsql(builder.Configuration.GetConnectionString("Default")));
+    options.UseNpgsql(builder.Configuration.GetConnectionString("Default"))
+);
 
 // JSON: camelCase (predefinito) e campi null omessi, così i campi facoltativi del contratto
 // TypeScript (es. `bio?: string`) arrivano al frontend come assenti, non come null.
 builder.Services.ConfigureHttpJsonOptions(options =>
-    options.SerializerOptions.DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull);
+    options.SerializerOptions.DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull
+);
 
 // CORS: il frontend gira su un'altra origine. In produzione sono ammesse solo quelle in Cors:Origins;
 // in sviluppo qualunque indirizzo locale, perché Vite passa a 5174, 5175… se la porta 5173 è occupata.
 var corsOrigins = builder.Configuration.GetSection("Cors:Origins").Get<string[]>() ?? [];
 var allowAnyLocalOrigin = builder.Environment.IsDevelopment();
-builder.Services.AddCors(options => options.AddDefaultPolicy(policy => policy
-    .SetIsOriginAllowed(origin => corsOrigins.Contains(origin)
-        || (allowAnyLocalOrigin && Uri.TryCreate(origin, UriKind.Absolute, out var uri) && uri.IsLoopback))
-    .AllowAnyHeader()
-    .AllowAnyMethod()));
+builder.Services.AddCors(options =>
+    options.AddDefaultPolicy(policy =>
+        policy
+            .SetIsOriginAllowed(origin =>
+                corsOrigins.Contains(origin)
+                || (
+                    allowAnyLocalOrigin
+                    && Uri.TryCreate(origin, UriKind.Absolute, out var uri)
+                    && uri.IsLoopback
+                )
+            )
+            .AllowAnyHeader()
+            .AllowAnyMethod()
+    )
+);
 
 builder.Services.AddNasInkAuth(builder.Configuration);
 builder.Services.AddRequestsRateLimit(builder.Configuration);
@@ -47,14 +59,18 @@ if (app.Environment.IsDevelopment())
     using var scope = app.Services.CreateScope();
     var db = scope.ServiceProvider.GetRequiredService<NasInkDbContext>();
     await db.Database.MigrateAsync();
-    await DbSeeder.SeedAsync(db, scope.ServiceProvider.GetRequiredService<IPasswordHasher<User>>(),
-        scope.ServiceProvider.GetRequiredService<StudioClock>().Today());
+    await DbSeeder.SeedAsync(
+        db,
+        scope.ServiceProvider.GetRequiredService<IPasswordHasher<User>>(),
+        scope.ServiceProvider.GetRequiredService<StudioClock>().Today()
+    );
 }
 
 // --- Pipeline HTTP ---
 
 app.UseApiErrors();
 app.UseCors();
+
 // Dopo UseCors, così anche le risposte 429 hanno gli header CORS e il browser mostra il messaggio.
 app.UseRateLimiter();
 app.UseAuthentication();

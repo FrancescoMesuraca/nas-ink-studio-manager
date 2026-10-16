@@ -20,17 +20,27 @@ public static class StudioEndpoints
     // Forma esatta di `StudioData` nel frontend. Usiamo record dedicati invece delle entità per non
     // esporre i campi interni del database (Position, RoomId).
     public sealed record BedDto(string Id, string Name);
+
     public sealed record RoomDto(string Id, string Name, IReadOnlyList<BedDto> Beds);
+
     public sealed record ArtistDto(string Id, string Name, string Color);
+
     public sealed record StudioDataDto(
         StudioHours Hours,
         IReadOnlyList<RoomDto> Rooms,
         IReadOnlyList<ArtistDto> Artists,
         IReadOnlyList<Booking> Bookings,
-        IReadOnlyList<CustomerRequest> Requests);
+        IReadOnlyList<CustomerRequest> Requests
+    );
 
     /// <summary>Corpo di POST e PUT. Nel PUT il frontend manda anche l'id, ma vale quello nell'URL.</summary>
-    public sealed record BookingInput(string? Date, string? Start, string? End, string? BedId, string? ArtistId);
+    public sealed record BookingInput(
+        string? Date,
+        string? Start,
+        string? End,
+        string? BedId,
+        string? ArtistId
+    );
 
     public static IEndpointRouteBuilder MapStudioEndpoints(this IEndpointRouteBuilder app)
     {
@@ -42,7 +52,11 @@ public static class StudioEndpoints
         return app;
     }
 
-    private static async Task<IResult> CreateBooking(BookingInput input, NasInkDbContext db, CancellationToken cancellationToken)
+    private static async Task<IResult> CreateBooking(
+        BookingInput input,
+        NasInkDbContext db,
+        CancellationToken cancellationToken
+    )
     {
         var booking = ToBooking(Guid.NewGuid().ToString(), input);
         await CheckBookingAsync(booking, db, cancellationToken);
@@ -51,9 +65,15 @@ public static class StudioEndpoints
         return Results.Created("/studio/bookings/" + booking.Id, booking);
     }
 
-    private static async Task<Booking> UpdateBooking(string id, BookingInput input, NasInkDbContext db, CancellationToken cancellationToken)
+    private static async Task<Booking> UpdateBooking(
+        string id,
+        BookingInput input,
+        NasInkDbContext db,
+        CancellationToken cancellationToken
+    )
     {
-        var existing = await db.Bookings.FindAsync([id], cancellationToken) ?? throw BookingNotFound();
+        var existing =
+            await db.Bookings.FindAsync([id], cancellationToken) ?? throw BookingNotFound();
         var changed = ToBooking(id, input);
         await CheckBookingAsync(changed, db, cancellationToken);
         db.Entry(existing).CurrentValues.SetValues(changed);
@@ -61,34 +81,52 @@ public static class StudioEndpoints
         return existing;
     }
 
-    private static async Task<IResult> DeleteBooking(string id, NasInkDbContext db, CancellationToken cancellationToken)
+    private static async Task<IResult> DeleteBooking(
+        string id,
+        NasInkDbContext db,
+        CancellationToken cancellationToken
+    )
     {
-        var deleted = await db.Bookings.Where(booking => booking.Id == id).ExecuteDeleteAsync(cancellationToken);
-        if (deleted == 0) throw BookingNotFound();
+        var deleted = await db
+            .Bookings.Where(booking => booking.Id == id)
+            .ExecuteDeleteAsync(cancellationToken);
+        if (deleted == 0)
+            throw BookingNotFound();
         return Results.NoContent();
     }
 
-    private static Booking ToBooking(string id, BookingInput input) => new()
-    {
-        Id = id,
-        Date = input.Date?.Trim() ?? "",
-        Start = input.Start?.Trim() ?? "",
-        End = input.End?.Trim() ?? "",
-        BedId = input.BedId ?? "",
-        ArtistId = input.ArtistId ?? "",
-    };
+    private static Booking ToBooking(string id, BookingInput input) =>
+        new()
+        {
+            Id = id,
+            Date = input.Date?.Trim() ?? "",
+            Start = input.Start?.Trim() ?? "",
+            End = input.End?.Trim() ?? "",
+            BedId = input.BedId ?? "",
+            ArtistId = input.ArtistId ?? "",
+        };
 
     /// <summary>
     /// Stessi controlli e stesso ordine di `saveBooking` nel mock: lettino e tatuatore esistenti (400),
     /// orario valido e dentro gli orari dello studio (400), nessun conflitto con altre prenotazioni
     /// o con le consulenze del tatuatore (409).
     /// </summary>
-    private static async Task CheckBookingAsync(Booking booking, NasInkDbContext db, CancellationToken cancellationToken)
+    private static async Task CheckBookingAsync(
+        Booking booking,
+        NasInkDbContext db,
+        CancellationToken cancellationToken
+    )
     {
         var bedExists = await db.Beds.AnyAsync(bed => bed.Id == booking.BedId, cancellationToken);
-        var artistExists = await db.Artists.AnyAsync(artist => artist.Id == booking.ArtistId, cancellationToken);
+        var artistExists = await db.Artists.AnyAsync(
+            artist => artist.Id == booking.ArtistId,
+            cancellationToken
+        );
         if (!bedExists || !artistExists)
-            throw new ApiException(StatusCodes.Status400BadRequest, "Lettino o tatuatore non valido.");
+            throw new ApiException(
+                StatusCodes.Status400BadRequest,
+                "Lettino o tatuatore non valido."
+            );
 
         var hours = (await db.StudioSettings.AsNoTracking().SingleAsync(cancellationToken)).Hours;
         var rangeError = BookingRules.TimeRangeError(booking.ToSlot(), hours);
@@ -96,44 +134,76 @@ public static class StudioEndpoints
             throw new ApiException(StatusCodes.Status400BadRequest, rangeError);
 
         // Bastano le prenotazioni dello stesso giorno, tranne quella che stiamo modificando.
-        var sameDay = await db.Bookings.AsNoTracking()
+        var sameDay = await db
+            .Bookings.AsNoTracking()
             .Where(other => other.Date == booking.Date && other.Id != booking.Id)
             .ToListAsync(cancellationToken);
         var conflict = BookingRules.BookingConflict(booking, sameDay);
         if (conflict is not null)
             throw new ApiException(StatusCodes.Status409Conflict, conflict);
 
-        var consultations = await db.Requests.AsNoTracking()
-            .Where(request => request.ConsultationSlot != null
+        var consultations = await db
+            .Requests.AsNoTracking()
+            .Where(request =>
+                request.ConsultationSlot != null
                 && request.ConsultationSlot.ArtistId == booking.ArtistId
-                && request.ConsultationSlot.Date == booking.Date)
+                && request.ConsultationSlot.Date == booking.Date
+            )
             .Select(request => request.ConsultationSlot!)
             .ToListAsync(cancellationToken);
-        if (consultations.Any(slot => BookingRules.Overlaps(booking.ToSlot(), new TimeSlot(slot.Date, slot.Start, slot.End))))
-            throw new ApiException(StatusCodes.Status409Conflict, "Il tatuatore ha una consulenza in questa fascia oraria.");
+        if (
+            consultations.Any(slot =>
+                BookingRules.Overlaps(
+                    booking.ToSlot(),
+                    new TimeSlot(slot.Date, slot.Start, slot.End)
+                )
+            )
+        )
+            throw new ApiException(
+                StatusCodes.Status409Conflict,
+                "Il tatuatore ha una consulenza in questa fascia oraria."
+            );
     }
 
-    private static ApiException BookingNotFound() => new(StatusCodes.Status404NotFound, "Prenotazione non trovata.");
+    private static ApiException BookingNotFound() =>
+        new(StatusCodes.Status404NotFound, "Prenotazione non trovata.");
 
-    private static async Task<StudioDataDto> GetStudio(NasInkDbContext db, CancellationToken cancellationToken)
+    private static async Task<StudioDataDto> GetStudio(
+        NasInkDbContext db,
+        CancellationToken cancellationToken
+    )
     {
-        var settings = await db.StudioSettings.AsNoTracking().SingleOrDefaultAsync(cancellationToken)
-            ?? throw new ApiException(StatusCodes.Status404NotFound, "Lo studio non è ancora stato configurato.");
+        var settings =
+            await db.StudioSettings.AsNoTracking().SingleOrDefaultAsync(cancellationToken)
+            ?? throw new ApiException(
+                StatusCodes.Status404NotFound,
+                "Lo studio non è ancora stato configurato."
+            );
 
-        var rooms = await db.Rooms.AsNoTracking()
+        var rooms = await db
+            .Rooms.AsNoTracking()
             .OrderBy(room => room.Position)
-            .Select(room => new RoomDto(room.Id, room.Name,
-                room.Beds.OrderBy(bed => bed.Position).Select(bed => new BedDto(bed.Id, bed.Name)).ToList()))
+            .Select(room => new RoomDto(
+                room.Id,
+                room.Name,
+                room.Beds.OrderBy(bed => bed.Position)
+                    .Select(bed => new BedDto(bed.Id, bed.Name))
+                    .ToList()
+            ))
             .ToListAsync(cancellationToken);
-        var artists = await db.Artists.AsNoTracking()
+        var artists = await db
+            .Artists.AsNoTracking()
             .OrderBy(artist => artist.Position)
             .Select(artist => new ArtistDto(artist.Id, artist.Name, artist.Color))
             .ToListAsync(cancellationToken);
-        var bookings = await db.Bookings.AsNoTracking()
-            .OrderBy(booking => booking.Date).ThenBy(booking => booking.Start)
+        var bookings = await db
+            .Bookings.AsNoTracking()
+            .OrderBy(booking => booking.Date)
+            .ThenBy(booking => booking.Start)
             .ToListAsync(cancellationToken);
         // Le più vecchie prima, come nel mock dove le nuove richieste vengono aggiunte in fondo.
-        var requests = await db.Requests.AsNoTracking()
+        var requests = await db
+            .Requests.AsNoTracking()
             .OrderBy(request => request.CreatedAt)
             .ToListAsync(cancellationToken);
 

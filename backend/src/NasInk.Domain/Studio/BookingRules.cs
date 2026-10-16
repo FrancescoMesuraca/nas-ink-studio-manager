@@ -19,14 +19,19 @@ public static class BookingRules
             return "Data o orario non validi.";
         if (string.CompareOrdinal(candidate.End, candidate.Start) <= 0)
             return "L’orario di fine deve essere successivo a quello di inizio.";
-        if (string.CompareOrdinal(candidate.Start, hours.Start) < 0 || string.CompareOrdinal(candidate.End, hours.End) > 0)
+        if (
+            string.CompareOrdinal(candidate.Start, hours.Start) < 0
+            || string.CompareOrdinal(candidate.End, hours.End) > 0
+        )
             return $"Scegli un orario tra {hours.Start} e {hours.End}.";
         return null;
     }
 
     /// <summary>Stesso giorno e fasce che si sovrappongono. Fasce consecutive (10–12 e 12–14) non si sovrappongono.</summary>
     public static bool Overlaps(TimeSlot a, TimeSlot b) =>
-        a.Date == b.Date && string.CompareOrdinal(a.Start, b.End) < 0 && string.CompareOrdinal(b.Start, a.End) < 0;
+        a.Date == b.Date
+        && string.CompareOrdinal(a.Start, b.End) < 0
+        && string.CompareOrdinal(b.Start, a.End) < 0;
 
     /// <summary>
     /// Conflitto con le altre prenotazioni (già esclusa quella che si sta modificando): stesso
@@ -36,16 +41,31 @@ public static class BookingRules
     {
         var slot = candidate.ToSlot();
         var overlapping = others.Where(other => Overlaps(slot, other.ToSlot())).ToList();
-        if (overlapping.Any(other => other.BedId == candidate.BedId)) return "Il lettino è già occupato in questa fascia oraria.";
-        if (overlapping.Any(other => other.ArtistId == candidate.ArtistId)) return "Il tatuatore ha già una prenotazione in questa fascia oraria.";
+        if (overlapping.Any(other => other.BedId == candidate.BedId))
+            return "Il lettino è già occupato in questa fascia oraria.";
+        if (overlapping.Any(other => other.ArtistId == candidate.ArtistId))
+            return "Il tatuatore ha già una prenotazione in questa fascia oraria.";
         return null;
     }
 
-    public static TimeSlot ToSlot(this Booking booking) => new(booking.Date, booking.Start, booking.End);
+    public static TimeSlot ToSlot(this Booking booking) =>
+        new(booking.Date, booking.Start, booking.End);
 
     private static bool IsDate(string value) =>
-        DateOnly.TryParseExact(value, "yyyy-MM-dd", CultureInfo.InvariantCulture, DateTimeStyles.None, out _);
+        DateOnly.TryParseExact(
+            value,
+            "yyyy-MM-dd",
+            CultureInfo.InvariantCulture,
+            DateTimeStyles.None,
+            out _
+        );
 
     private static bool IsTime(string value) =>
-        TimeOnly.TryParseExact(value, "HH:mm", CultureInfo.InvariantCulture, DateTimeStyles.None, out _);
+        TimeOnly.TryParseExact(
+            value,
+            "HH:mm",
+            CultureInfo.InvariantCulture,
+            DateTimeStyles.None,
+            out _
+        );
 }

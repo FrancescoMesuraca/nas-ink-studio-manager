@@ -8,10 +8,19 @@ public sealed class RequestValidationTests
 {
     internal static readonly NewRequestInput FromSite = new()
     {
-        Name = "Chiara Rossi", Email = "chiara@example.com", Phone = "", Contact = "",
-        Description = "Una piccola balena in fine line.", BodyArea = "Polso", Size = "Piccolo (fino a 5 cm)",
-        Style = "Non so", References = "", ReferenceImages = [], Source = RequestSource.Sito,
-        PrivacyConsent = true, PreferredArtistId = "artist-3",
+        Name = "Chiara Rossi",
+        Email = "chiara@example.com",
+        Phone = "",
+        Contact = "",
+        Description = "Una piccola balena in fine line.",
+        BodyArea = "Polso",
+        Size = "Piccolo (fino a 5 cm)",
+        Style = "Non so",
+        References = "",
+        ReferenceImages = [],
+        Source = RequestSource.Sito,
+        PrivacyConsent = true,
+        PreferredArtistId = "artist-3",
     };
 
     [Fact]
@@ -20,10 +29,20 @@ public sealed class RequestValidationTests
     [Fact]
     public void SiteRequest_NeedsAContactAndPrivacyConsent()
     {
-        var errors = (FromSite with { Email = " ", Phone = null, PrivacyConsent = false }).Validate();
+        var errors = (
+            FromSite with
+            {
+                Email = " ",
+                Phone = null,
+                PrivacyConsent = false,
+            }
+        ).Validate();
 
         Assert.Equal("Lasciaci almeno un recapito: email o telefono.", errors["contact"]);
-        Assert.Equal("Per inviare la richiesta devi accettare l’informativa privacy.", errors["privacyConsent"]);
+        Assert.Equal(
+            "Per inviare la richiesta devi accettare l’informativa privacy.",
+            errors["privacyConsent"]
+        );
     }
 
     [Theory]
@@ -35,27 +54,46 @@ public sealed class RequestValidationTests
     [Theory]
     [InlineData("+39 333 123 4567", true)]
     [InlineData("(02) 1234-5678", true)]
-    [InlineData("12345", false)]          // troppo corto
-    [InlineData("333 12a 4567", false)]   // lettere
-    [InlineData("+ - ( ) . - -", false)]  // caratteri ammessi ma meno di 6 cifre
+    [InlineData("12345", false)] // troppo corto
+    [InlineData("333 12a 4567", false)] // lettere
+    [InlineData("+ - ( ) . - -", false)] // caratteri ammessi ma meno di 6 cifre
     public void Phone_FollowsFrontendRules(string phone, bool valid) =>
         Assert.Equal(valid, !(FromSite with { Phone = phone }).Validate().ContainsKey("phone"));
 
     [Fact]
     public void SiteDescription_NeedsAtLeastTenCharacters()
     {
-        Assert.Equal("Raccontaci qualcosa in più (almeno 10 caratteri).", (FromSite with { Description = "Rosa" }).Validate()["description"]);
+        Assert.Equal(
+            "Raccontaci qualcosa in più (almeno 10 caratteri).",
+            (FromSite with { Description = "Rosa" }).Validate()["description"]
+        );
         // Dal gestionale basta una parola.
-        Assert.False((FromSite with { Description = "Rosa", Source = RequestSource.Gestionale }).Validate().ContainsKey("description"));
+        Assert.False(
+            (FromSite with { Description = "Rosa", Source = RequestSource.Gestionale })
+                .Validate()
+                .ContainsKey("description")
+        );
     }
 
     [Fact]
     public void RequiredFieldsAndImageLimit()
     {
-        var errors = (FromSite with { Name = "", BodyArea = "", Size = "", Style = "", ReferenceImages = ["a", "b", "c", "d"] }).Validate();
+        var errors = (
+            FromSite with
+            {
+                Name = "",
+                BodyArea = "",
+                Size = "",
+                Style = "",
+                ReferenceImages = ["a", "b", "c", "d"],
+            }
+        ).Validate();
 
         Assert.Equal(["name", "bodyArea", "size", "style", "referenceImages"], errors.Keys);
-        Assert.Equal("Il nome è troppo lungo.", (FromSite with { Name = new string('a', 101) }).Validate()["name"]);
+        Assert.Equal(
+            "Il nome è troppo lungo.",
+            (FromSite with { Name = new string('a', 101) }).Validate()["name"]
+        );
     }
 
     [Fact]

@@ -23,7 +23,10 @@ public sealed class SiteEndpointsTests(ApiFactory factory) : IClassFixture<ApiFa
 
         // Tatuatori nell'ordine del gestionale, con bio e instagram presi dal profilo del sito.
         var artists = site.GetProperty("artists").EnumerateArray().ToList();
-        Assert.Equal(["artist-1", "artist-2", "artist-3"], artists.Select(a => a.GetProperty("id").GetString()));
+        Assert.Equal(
+            ["artist-1", "artist-2", "artist-3"],
+            artists.Select(a => a.GetProperty("id").GetString())
+        );
         Assert.Equal("Maya Conti", artists[0].GetProperty("name").GetString());
         Assert.Equal("maya.ink", artists[0].GetProperty("instagram").GetString());
         // Campi facoltativi assenti (non null), come `photoUrl?: string` nel contratto TypeScript.
@@ -38,7 +41,10 @@ public sealed class SiteEndpointsTests(ApiFactory factory) : IClassFixture<ApiFa
 
         var response = await _client.SendAsync(request);
 
-        Assert.Equal("http://localhost:5173", response.Headers.GetValues("Access-Control-Allow-Origin").Single());
+        Assert.Equal(
+            "http://localhost:5173",
+            response.Headers.GetValues("Access-Control-Allow-Origin").Single()
+        );
     }
 
     [Fact]

@@ -20,22 +20,38 @@ public static class RequestsEndpoints
     /// Anti-spam del modulo pubblico: al massimo PermitLimit invii ogni WindowMinutes minuti per
     /// indirizzo IP (configurabile in RateLimiting:PublicForm). Oltre il limite: 429.
     /// </summary>
-    public static IServiceCollection AddRequestsRateLimit(this IServiceCollection services, IConfiguration configuration)
+    public static IServiceCollection AddRequestsRateLimit(
+        this IServiceCollection services,
+        IConfiguration configuration
+    )
     {
         var permitLimit = configuration.GetValue("RateLimiting:PublicForm:PermitLimit", 5);
-        var window = TimeSpan.FromMinutes(configuration.GetValue("RateLimiting:PublicForm:WindowMinutes", 10));
+        var window = TimeSpan.FromMinutes(
+            configuration.GetValue("RateLimiting:PublicForm:WindowMinutes", 10)
+        );
 
         return services.AddRateLimiter(options =>
         {
-            options.AddPolicy(PublicFormPolicy, context => RateLimitPartition.GetFixedWindowLimiter(
-                context.Connection.RemoteIpAddress?.ToString() ?? "sconosciuto",
-                _ => new FixedWindowRateLimiterOptions { PermitLimit = permitLimit, Window = window }));
+            options.AddPolicy(
+                PublicFormPolicy,
+                context =>
+                    RateLimitPartition.GetFixedWindowLimiter(
+                        context.Connection.RemoteIpAddress?.ToString() ?? "sconosciuto",
+                        _ => new FixedWindowRateLimiterOptions
+                        {
+                            PermitLimit = permitLimit,
+                            Window = window,
+                        }
+                    )
+            );
 
             options.OnRejected = async (context, cancellationToken) =>
             {
                 context.HttpContext.Response.StatusCode = StatusCodes.Status429TooManyRequests;
                 await context.HttpContext.Response.WriteAsJsonAsync(
-                    new ApiErrorBody("Hai inviato troppe richieste. Riprova tra qualche minuto."), cancellationToken);
+                    new ApiErrorBody("Hai inviato troppe richieste. Riprova tra qualche minuto."),
+                    cancellationToken
+                );
             };
         });
     }
@@ -48,21 +64,40 @@ public static class RequestsEndpoints
     }
 
     private static async Task<IResult> CreateRequest(
-        NewRequestInput input, HttpContext context, NasInkDbContext db, TimeProvider clock, CancellationToken cancellationToken)
+        NewRequestInput input,
+        HttpContext context,
+        NasInkDbContext db,
+        TimeProvider clock,
+        CancellationToken cancellationToken
+    )
     {
         if (input.Source is not (RequestSource.Sito or RequestSource.Gestionale))
-            throw new ApiException(StatusCodes.Status400BadRequest, "Origine della richiesta non valida.");
+            throw new ApiException(
+                StatusCodes.Status400BadRequest,
+                "Origine della richiesta non valida."
+            );
         // L'endpoint è pubblico, ma le richieste "gestionale" le può inserire solo chi ha fatto il login.
-        if (input.Source == RequestSource.Gestionale && context.User.Identity?.IsAuthenticated != true)
-            throw new ApiException(StatusCodes.Status401Unauthorized, "Accedi al gestionale per inserire una richiesta.");
+        if (
+            input.Source == RequestSource.Gestionale
+            && context.User.Identity?.IsAuthenticated != true
+        )
+            throw new ApiException(
+                StatusCodes.Status401Unauthorized,
+                "Accedi al gestionale per inserire una richiesta."
+            );
 
         // Come nel mock: il primo messaggio diventa `message`, tutti finiscono in `fields`.
         var errors = input.Validate();
         if (errors.Count > 0)
             throw new ApiException(StatusCodes.Status400BadRequest, errors.Values.First(), errors);
 
-        if (!string.IsNullOrWhiteSpace(input.PreferredArtistId)
-            && !await db.Artists.AnyAsync(artist => artist.Id == input.PreferredArtistId.Trim(), cancellationToken))
+        if (
+            !string.IsNullOrWhiteSpace(input.PreferredArtistId)
+            && !await db.Artists.AnyAsync(
+                artist => artist.Id == input.PreferredArtistId.Trim(),
+                cancellationToken
+            )
+        )
             throw new ApiException(StatusCodes.Status400BadRequest, "Tatuatore non valido.");
 
         var request = input.ToNewRequest(Guid.NewGuid().ToString(), clock.GetUtcNow());

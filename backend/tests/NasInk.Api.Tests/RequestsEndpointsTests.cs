@@ -34,7 +34,9 @@ public sealed class RequestsEndpointsTests(ApiFactory factory) : IClassFixture<A
         // È davvero nel database.
         using var scope = factory.Services.CreateScope();
         var db = scope.ServiceProvider.GetRequiredService<NasInkDbContext>();
-        var saved = await db.Requests.SingleAsync(request => request.Id == created.GetProperty("id").GetString());
+        var saved = await db.Requests.SingleAsync(request =>
+            request.Id == created.GetProperty("id").GetString()
+        );
         Assert.Equal("Chiara Rossi", saved.Name);
     }
 
@@ -43,7 +45,14 @@ public sealed class RequestsEndpointsTests(ApiFactory factory) : IClassFixture<A
     {
         var request = new HttpRequestMessage(HttpMethod.Post, "/requests")
         {
-            Content = JsonContent.Create(FromSite with { Email = "", Phone = "", PrivacyConsent = false }),
+            Content = JsonContent.Create(
+                FromSite with
+                {
+                    Email = "",
+                    Phone = "",
+                    PrivacyConsent = false,
+                }
+            ),
         };
         request.Headers.Add("Origin", "http://localhost:5173");
 
@@ -51,9 +60,15 @@ public sealed class RequestsEndpointsTests(ApiFactory factory) : IClassFixture<A
 
         Assert.Equal(HttpStatusCode.BadRequest, response.StatusCode);
         // Senza questo header il browser nasconderebbe il messaggio di errore al modulo.
-        Assert.Equal("http://localhost:5173", response.Headers.GetValues("Access-Control-Allow-Origin").Single());
+        Assert.Equal(
+            "http://localhost:5173",
+            response.Headers.GetValues("Access-Control-Allow-Origin").Single()
+        );
         var error = await response.Content.ReadFromJsonAsync<JsonElement>();
-        Assert.Equal("Lasciaci almeno un recapito: email o telefono.", error.GetProperty("message").GetString());
+        Assert.Equal(
+            "Lasciaci almeno un recapito: email o telefono.",
+            error.GetProperty("message").GetString()
+        );
         var fields = error.GetProperty("fields");
         Assert.True(fields.TryGetProperty("contact", out _));
         Assert.True(fields.TryGetProperty("privacyConsent", out _));
@@ -62,19 +77,46 @@ public sealed class RequestsEndpointsTests(ApiFactory factory) : IClassFixture<A
     [Fact]
     public async Task UnknownArtistOrTooManyImages_Returns400()
     {
-        var unknownArtist = await _client.PostAsJsonAsync("/requests", FromSite with { PreferredArtistId = "nessuno" });
-        var tooManyImages = await _client.PostAsJsonAsync("/requests", FromSite with { ReferenceImages = ["a", "b", "c", "d"] });
+        var unknownArtist = await _client.PostAsJsonAsync(
+            "/requests",
+            FromSite with
+            {
+                PreferredArtistId = "nessuno",
+            }
+        );
+        var tooManyImages = await _client.PostAsJsonAsync(
+            "/requests",
+            FromSite with
+            {
+                ReferenceImages = ["a", "b", "c", "d"],
+            }
+        );
 
         Assert.Equal(HttpStatusCode.BadRequest, unknownArtist.StatusCode);
-        Assert.Equal("Tatuatore non valido.", (await unknownArtist.Content.ReadFromJsonAsync<JsonElement>()).GetProperty("message").GetString());
+        Assert.Equal(
+            "Tatuatore non valido.",
+            (await unknownArtist.Content.ReadFromJsonAsync<JsonElement>())
+                .GetProperty("message")
+                .GetString()
+        );
         Assert.Equal(HttpStatusCode.BadRequest, tooManyImages.StatusCode);
-        Assert.True((await tooManyImages.Content.ReadFromJsonAsync<JsonElement>()).GetProperty("fields").TryGetProperty("referenceImages", out _));
+        Assert.True(
+            (await tooManyImages.Content.ReadFromJsonAsync<JsonElement>())
+                .GetProperty("fields")
+                .TryGetProperty("referenceImages", out _)
+        );
     }
 
     [Fact]
     public async Task ManagementRequest_WithoutLogin_Returns401()
     {
-        var response = await _client.PostAsJsonAsync("/requests", FromSite with { Source = RequestSource.Gestionale });
+        var response = await _client.PostAsJsonAsync(
+            "/requests",
+            FromSite with
+            {
+                Source = RequestSource.Gestionale,
+            }
+        );
 
         Assert.Equal(HttpStatusCode.Unauthorized, response.StatusCode);
     }
@@ -83,16 +125,25 @@ public sealed class RequestsEndpointsTests(ApiFactory factory) : IClassFixture<A
     public async Task TooManySubmissions_Returns429()
     {
         // Un'altra istanza dell'API, con lo stesso database ma un limite di 2 invii.
-        using var limited = factory.WithWebHostBuilder(builder => builder.UseSetting("RateLimiting:PublicForm:PermitLimit", "2"));
+        using var limited = factory.WithWebHostBuilder(builder =>
+            builder.UseSetting("RateLimiting:PublicForm:PermitLimit", "2")
+        );
         var client = limited.CreateClient();
 
         for (var i = 0; i < 2; i++)
-            Assert.Equal(HttpStatusCode.Created, (await client.PostAsJsonAsync("/requests", FromSite)).StatusCode);
+            Assert.Equal(
+                HttpStatusCode.Created,
+                (await client.PostAsJsonAsync("/requests", FromSite)).StatusCode
+            );
         var rejected = await client.PostAsJsonAsync("/requests", FromSite);
 
         Assert.Equal(HttpStatusCode.TooManyRequests, rejected.StatusCode);
-        Assert.Equal("Hai inviato troppe richieste. Riprova tra qualche minuto.",
-            (await rejected.Content.ReadFromJsonAsync<JsonElement>()).GetProperty("message").GetString());
+        Assert.Equal(
+            "Hai inviato troppe richieste. Riprova tra qualche minuto.",
+            (await rejected.Content.ReadFromJsonAsync<JsonElement>())
+                .GetProperty("message")
+                .GetString()
+        );
     }
 
     [Fact]
@@ -106,6 +157,9 @@ public sealed class RequestsEndpointsTests(ApiFactory factory) : IClassFixture<A
         var demoDay = (await db.Bookings.SingleAsync(booking => booking.Id == "booking-1")).Date;
 
         Assert.Equal("Drago giapponese", giulia.Consultation.Subject);
-        Assert.Equal(new ConsultationSlot("artist-1", demoDay, "09:00", "09:30", "confermata"), giulia.ConsultationSlot);
+        Assert.Equal(
+            new ConsultationSlot("artist-1", demoDay, "09:00", "09:30", "confermata"),
+            giulia.ConsultationSlot
+        );
     }
 }

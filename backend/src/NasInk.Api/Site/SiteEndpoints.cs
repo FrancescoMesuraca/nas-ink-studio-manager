@@ -18,12 +18,20 @@ public static class SiteEndpoints
         return app;
     }
 
-    private static async Task<PublicSite> GetPublicSite(NasInkDbContext db, CancellationToken cancellationToken)
+    private static async Task<PublicSite> GetPublicSite(
+        NasInkDbContext db,
+        CancellationToken cancellationToken
+    )
     {
-        var document = await db.SiteDocuments.AsNoTracking().SingleOrDefaultAsync(cancellationToken);
+        var document = await db
+            .SiteDocuments.AsNoTracking()
+            .SingleOrDefaultAsync(cancellationToken);
         var studio = await db.StudioSettings.AsNoTracking().SingleOrDefaultAsync(cancellationToken);
         if (document is null || studio is null)
-            throw new ApiException(StatusCodes.Status404NotFound, "Il sito non è ancora stato configurato.");
+            throw new ApiException(
+                StatusCodes.Status404NotFound,
+                "Il sito non è ancora stato configurato."
+            );
 
         var artists = await db.Artists.AsNoTracking().ToListAsync(cancellationToken);
         return PublicSite.Create(document.Content, artists, studio.Hours);

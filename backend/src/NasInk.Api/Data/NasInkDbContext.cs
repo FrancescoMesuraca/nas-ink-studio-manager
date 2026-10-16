@@ -74,7 +74,10 @@ public sealed class NasInkDbContext(DbContextOptions<NasInkDbContext> options) :
             room.Property(r => r.Id).HasMaxLength(64);
             room.Property(r => r.Name).HasMaxLength(120);
             // Eliminando una sala si eliminano anche i suoi lettini.
-            room.HasMany(r => r.Beds).WithOne().HasForeignKey(b => b.RoomId).OnDelete(DeleteBehavior.Cascade);
+            room.HasMany(r => r.Beds)
+                .WithOne()
+                .HasForeignKey(b => b.RoomId)
+                .OnDelete(DeleteBehavior.Cascade);
         });
 
         modelBuilder.Entity<Bed>(bed =>
@@ -92,8 +95,16 @@ public sealed class NasInkDbContext(DbContextOptions<NasInkDbContext> options) :
             booking.HasIndex(b => b.Date);
             // Un lettino o un tatuatore con prenotazioni non si può eliminare (Restrict):
             // l'API dovrà rispondere 409, come il mock.
-            booking.HasOne<Bed>().WithMany().HasForeignKey(b => b.BedId).OnDelete(DeleteBehavior.Restrict);
-            booking.HasOne<Artist>().WithMany().HasForeignKey(b => b.ArtistId).OnDelete(DeleteBehavior.Restrict);
+            booking
+                .HasOne<Bed>()
+                .WithMany()
+                .HasForeignKey(b => b.BedId)
+                .OnDelete(DeleteBehavior.Restrict);
+            booking
+                .HasOne<Artist>()
+                .WithMany()
+                .HasForeignKey(b => b.ArtistId)
+                .OnDelete(DeleteBehavior.Restrict);
         });
 
         modelBuilder.Entity<User>(user =>
@@ -115,15 +126,24 @@ public sealed class NasInkDbContext(DbContextOptions<NasInkDbContext> options) :
 
         // Conversione SiteContent <-> testo JSON, salvato in una colonna di tipo jsonb.
         // Il ValueComparer dice a EF come capire se il contenuto è cambiato (confronta il JSON).
-        modelBuilder.Entity<SiteDocument>()
+        modelBuilder
+            .Entity<SiteDocument>()
             .Property(s => s.Content)
             .HasColumnType("jsonb")
             .HasConversion(
                 content => JsonSerializer.Serialize(content, JsonOptions),
                 json => JsonSerializer.Deserialize<SiteContent>(json, JsonOptions)!,
                 new ValueComparer<SiteContent>(
-                    (a, b) => JsonSerializer.Serialize(a, JsonOptions) == JsonSerializer.Serialize(b, JsonOptions),
+                    (a, b) =>
+                        JsonSerializer.Serialize(a, JsonOptions)
+                        == JsonSerializer.Serialize(b, JsonOptions),
                     content => JsonSerializer.Serialize(content, JsonOptions).GetHashCode(),
-                    content => JsonSerializer.Deserialize<SiteContent>(JsonSerializer.Serialize(content, JsonOptions), JsonOptions)!));
+                    content =>
+                        JsonSerializer.Deserialize<SiteContent>(
+                            JsonSerializer.Serialize(content, JsonOptions),
+                            JsonOptions
+                        )!
+                )
+            );
     }
 }
