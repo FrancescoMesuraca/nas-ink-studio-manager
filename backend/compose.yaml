@@ -1,0 +1,24 @@
+# Nome del progetto Docker: container "nasink-db-1", volume "nasink_nasink-db".
+name: nasink
+
+# PostgreSQL per lo sviluppo locale. Avvio: `docker compose up -d` (dalla cartella backend).
+# Credenziali solo di sviluppo: le stesse di src/NasInk.Api/appsettings.Development.json.
+services:
+  db:
+    image: postgres:17
+    environment:
+      POSTGRES_DB: nasink
+      POSTGRES_USER: nasink
+      POSTGRES_PASSWORD: nasink
+    ports:
+      - "5432:5432"
+    volumes:
+      - nasink-db:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U nasink -d nasink"]
+      interval: 5s
+      timeout: 3s
+      retries: 10
+
+volumes:
+  nasink-db:

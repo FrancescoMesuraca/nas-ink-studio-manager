@@ -1,0 +1,24 @@
+/* Sfondo avorio con un velo di onde (seigaiha) e un alone rosso tenue. */
+.login-page { position: relative; isolation: isolate; background: radial-gradient(circle at 15% 0%, var(--primary-soft) 0, transparent 50%), var(--bg); }
+.login-page::before { content: ''; position: absolute; inset: 0; z-index: -1; background: var(--text); opacity: .045; -webkit-mask: var(--pattern-waves) repeat; mask: var(--pattern-waves) repeat; -webkit-mask-size: 48px 24px; mask-size: 48px 24px; }
+.login-card { text-align: left; }
+.center-card .login-brand { display: flex; align-items: center; gap: 10px; color: var(--primary); font-size: .7rem; font-weight: 600; letter-spacing: var(--tracking-wide); margin: 0 0 var(--space-3); }
+.center-card .login-brand::before { content: '彫'; display: inline-grid; place-items: center; width: 26px; height: 26px; border-radius: var(--radius-sm); background: var(--primary); color: var(--on-primary); font-family: var(--font-seal); font-size: .95rem; letter-spacing: 0; }
+.login-form { display: grid; gap: var(--space-3); }
+.login-form label { display: grid; gap: 6px; color: var(--text-muted); font-size: .72rem; font-weight: 600; letter-spacing: .06em; text-transform: uppercase; }
+.login-form input { width: 100%; border: 1px solid var(--line-strong); border-radius: var(--radius); padding: 11px; background: var(--surface); color: var(--text); font-size: 1rem; }
+.login-form input:focus-visible { outline: none; border-color: var(--primary); box-shadow: var(--focus-ring); }
+.login-form > button { display: flex; justify-content: center; gap: var(--space-3); margin-top: var(--space-2); background: var(--primary); color: var(--on-primary); border: 0; border-radius: var(--radius-sm); padding: 13px; font-size: .8rem; font-weight: 600; letter-spacing: var(--tracking-label); text-transform: uppercase; }
+.login-form > button::after { content: '→'; letter-spacing: 0; }
+.login-form > button:hover:not(:disabled) { background: var(--primary-hover); }
+.login-form > button:disabled { opacity: .6; cursor: progress; }
+.center-card .login-error { background: var(--danger-soft); border-left: 3px solid var(--danger); color: var(--danger); padding: 10px var(--space-3); border-radius: var(--radius); margin: 0; }
+.login-demo { margin-top: var(--space-5); padding-top: var(--space-4); border-top: 1px dashed var(--line-strong); }
+.login-demo h2 { font-size: .7rem; font-weight: 600; letter-spacing: var(--tracking-wide); text-transform: uppercase; color: var(--secondary); margin: 0 0 var(--space-1); }
+.center-card .login-demo p { font-size: .85rem; margin-bottom: 10px; }
+.login-demo ul { list-style: none; margin: 0; padding: 0; display: grid; gap: 6px; }
+.login-demo li button { width: 100%; display: grid; gap: 2px; text-align: left; background: var(--bg); border: 1px solid var(--line); border-radius: var(--radius); padding: var(--space-2) 10px; color: var(--text); }
+.login-demo li button:hover, .login-demo li button:focus-visible { border-color: var(--primary); outline: none; }
+.login-demo li span { font-size: .78rem; color: var(--text-muted); }
+.login-back { display: inline-block; margin-top: var(--space-4); color: var(--text-muted); font-size: .74rem; font-weight: 600; letter-spacing: var(--tracking-label); text-transform: uppercase; text-decoration: none; }
+.login-back:hover { color: var(--primary); }

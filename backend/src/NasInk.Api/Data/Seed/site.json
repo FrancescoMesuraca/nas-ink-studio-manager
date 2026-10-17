@@ -1,0 +1,41 @@
+{
+  "studioName": "NAS INK",
+  "theme": { "accent": "#a62b2b", "background": "light", "font": "classic" },
+  "hero": {
+    "title": "Tatuaggi su misura, disegnati per te",
+    "subtitle": "Studio privato su appuntamento. Ogni progetto nasce da una consulenza e da un disegno originale, mai da un catalogo.",
+    "imageUrl": "/demo/hero.svg",
+    "ctaLabel": "Richiedi un tatuaggio"
+  },
+  "about": {
+    "title": "Lo studio",
+    "text": "NAS INK è uno spazio tranquillo e luminoso, con due sale private e materiali monouso certificati.\n\nLavoriamo solo su appuntamento: prima ci racconti la tua idea, poi la sviluppiamo insieme in consulenza e prepariamo una bozza pensata per la zona del corpo che hai scelto.\n\nCi piacciono il fine line, il giapponese tradizionale, il blackwork e il botanico, ma ogni tatuatore ha il suo stile: guarda i lavori e scegli chi senti più vicino.",
+    "imageUrl": "/demo/studio.svg"
+  },
+  "gallery": [
+    { "id": "g-1", "imageUrl": "/demo/rose.svg", "caption": "Rosa tradizionale", "artistId": "artist-1" },
+    { "id": "g-2", "imageUrl": "/demo/wave.svg", "caption": "Onda e sole rosso", "artistId": "artist-2" },
+    { "id": "g-3", "imageUrl": "/demo/olive.svg", "caption": "Ramo di ulivo fine line", "artistId": "artist-3" },
+    { "id": "g-4", "imageUrl": "/demo/serpent.svg", "caption": "Serpente e pugnale", "artistId": "artist-2" },
+    { "id": "g-5", "imageUrl": "/demo/moon.svg", "caption": "Fasi lunari", "artistId": "artist-3" },
+    { "id": "g-6", "imageUrl": "/demo/sun.svg", "caption": "Sole ornamentale", "artistId": "artist-1" }
+  ],
+  "artistProfiles": [
+    { "artistId": "artist-1", "bio": "Giapponese tradizionale e neo-traditional. Ama i progetti grandi che seguono il movimento del corpo.", "instagram": "maya.ink" },
+    { "artistId": "artist-2", "bio": "Old school e blackwork: linee decise, colori pieni e tatuaggi che restano leggibili negli anni.", "instagram": "luca.neri.tattoo" },
+    { "artistId": "artist-3", "bio": "Fine line e botanico. Tatuaggi delicati, piccoli dettagli e composizioni minimal.", "instagram": "elena.riva.ink" }
+  ],
+  "contacts": {
+    "address": "Via dei Mille 24, 20129 Milano (MI)",
+    "phone": "+39 02 1234 5678",
+    "email": "ciao@nasink.demo",
+    "instagram": "nasink.studio",
+    "mapUrl": "https://www.openstreetmap.org/search?query=Via%20dei%20Mille%2024%20Milano"
+  },
+  "sections": [
+    { "id": "about", "visible": true },
+    { "id": "gallery", "visible": true },
+    { "id": "artists", "visible": true },
+    { "id": "contacts", "visible": true }
+  ]
+}

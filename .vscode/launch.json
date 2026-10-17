@@ -1,0 +1,28 @@
+{
+  // Pannello "Esegui e debug" (Cmd+Shift+D): scegli una voce dal menu in alto e premi ▶.
+  // Ogni voce lancia start-dev.sh in un terminale; il quadrato rosso (o Ctrl+C) ferma tutto.
+  "version": "0.2.0",
+  "configurations": [
+    {
+      "name": "▶ Avvia tutto (DB + backend + frontend)",
+      "type": "node-terminal",
+      "request": "launch",
+      "command": "./start-dev.sh",
+      "cwd": "${workspaceFolder}"
+    },
+    {
+      "name": "▶ Solo frontend (API simulate)",
+      "type": "node-terminal",
+      "request": "launch",
+      "command": "./start-dev.sh --mock",
+      "cwd": "${workspaceFolder}"
+    },
+    {
+      "name": "▶ Avvia tutto con database ripulito (dati demo)",
+      "type": "node-terminal",
+      "request": "launch",
+      "command": "./start-dev.sh --reset",
+      "cwd": "${workspaceFolder}"
+    }
+  ]
+}

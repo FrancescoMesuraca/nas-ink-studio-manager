@@ -1,0 +1,37 @@
+{
+  // Avvio da VS Code: Cmd+Shift+B (task predefinito), oppure Terminal → Run Task.
+  "version": "2.0.0",
+  "tasks": [
+    {
+      "label": "Start dev (DB + backend + frontend)",
+      "type": "shell",
+      "command": "./start-dev.sh",
+      "isBackground": true,
+      "problemMatcher": [],
+      "group": { "kind": "build", "isDefault": true },
+      "presentation": { "reveal": "always", "panel": "dedicated", "clear": true }
+    },
+    {
+      "label": "Start dev (solo frontend, API simulate)",
+      "type": "shell",
+      "command": "./start-dev.sh --mock",
+      "isBackground": true,
+      "problemMatcher": [],
+      "presentation": { "reveal": "always", "panel": "dedicated", "clear": true }
+    },
+    {
+      "label": "Start dev (database ripulito con dati demo)",
+      "type": "shell",
+      "command": "./start-dev.sh --reset",
+      "isBackground": true,
+      "problemMatcher": [],
+      "presentation": { "reveal": "always", "panel": "dedicated", "clear": true }
+    },
+    {
+      "label": "Spegni il database",
+      "type": "shell",
+      "command": "docker compose -f backend/compose.yaml down",
+      "problemMatcher": []
+    }
+  ]
+}

@@ -1,0 +1,4 @@
+/* Componenti condivisi: solo la struttura. Colori e caratteri li decide il contesto (sito o gestionale). */
+.field { display: grid; gap: 6px; min-width: 0; }
+.field-hint, .field-error { margin: 0; }
+.artist-dot { display: inline-block; border-radius: 50%; flex: none; }

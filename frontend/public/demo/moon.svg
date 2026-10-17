@@ -1,0 +1,19 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 800 1000">
+  <rect width="800" height="1000" fill="#ece3d6"/>
+  <defs><clipPath id="c"><circle r="70"/></clipPath></defs>
+  <g fill="none" stroke="#1d1a1a" stroke-width="5">
+    <path d="M400 80v840" stroke-width="2" stroke-dasharray="4 14"/>
+    <g transform="translate(400 170)"><circle r="70"/><circle cx="-50" r="70" fill="#1d1a1a" clip-path="url(#c)"/></g>
+    <g transform="translate(400 340)"><circle r="70"/><rect x="-70" y="-70" width="70" height="140" fill="#1d1a1a" clip-path="url(#c)"/></g>
+    <g transform="translate(400 510)"><circle r="96" fill="#d4a373" fill-opacity=".55"/><circle r="96"/><circle r="120" stroke-dasharray="2 10"/></g>
+    <g transform="translate(400 680)"><circle r="70"/><rect x="0" y="-70" width="70" height="140" fill="#1d1a1a" clip-path="url(#c)"/></g>
+    <g transform="translate(400 850)"><circle r="70"/><circle cx="50" r="70" fill="#1d1a1a" clip-path="url(#c)"/></g>
+  </g>
+  <g fill="#1d1a1a">
+    <path d="M190 260l8 22 22 8-22 8-8 22-8-22-22-8 22-8z"/>
+    <path d="M620 420l6 16 16 6-16 6-6 16-6-16-16-6 16-6z"/>
+    <path d="M200 720l6 16 16 6-16 6-6 16-6-16-16-6 16-6z"/>
+    <path d="M610 820l8 22 22 8-22 8-8 22-8-22-22-8 22-8z"/>
+    <circle cx="250" cy="480" r="5"/><circle cx="560" cy="200" r="5"/><circle cx="580" cy="640" r="4"/>
+  </g>
+</svg>

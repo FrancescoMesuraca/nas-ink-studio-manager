@@ -1,0 +1,80 @@
+/* Design tokens: l'unico posto in cui si scrivono colori, caratteri e misure.
+   Tutti gli altri CSS usano solo queste variabili, con var(--nome).
+   Livello 1 = palette (i colori "grezzi"); livello 2 = ruoli (a cosa serve un colore). */
+
+:root {
+  /* --- Livello 1: palette --- */
+  --color-shiro: #f9f6f0;      /* Shiro-Neri: avorio, pergamena */
+  --color-paper: #fffdf9;      /* carta chiara per le schede sopra l'avorio */
+  --color-washi: #f2ede4;      /* avorio un tono più scuro, per le sezioni alternate */
+  --color-tatami: #e2ddd5;     /* Tatami Straw: pannelli, bordi, griglie */
+  --color-tatami-dark: #cdc6bb;
+  --color-kokutan: #242424;    /* Kokutan: testi */
+  --color-sumi: #161515;       /* inchiostro, più scuro di Kokutan */
+  --color-sumi-deep: #0e0d0d;
+  --color-sumi-raised: #2f2d2b;
+  --color-ash-light: #b5ada2;  /* testo attenuato sul fondo scuro */
+  --color-bengara-light: #e8867a; /* errori leggibili sul fondo scuro */
+  --color-ash: #6b645b;        /* grigio caldo per i testi attenuati */
+  --color-bengara: #a62b2b;    /* Bengara: primario e azioni */
+  --color-bengara-dark: #862121;
+  --color-bengara-soft: #f5e4df;
+  --color-shinbashi: #3b5249;  /* Shinbashi-Iru: secondario e stati */
+  --color-shinbashi-dark: #2c3f38;
+  --color-shinbashi-soft: #e1e9e4;
+  --color-ochre: #8a6420;      /* ocra: consulenze */
+  --color-ochre-soft: #f6ead0;
+
+  /* --- Livello 2: ruoli --- */
+  --bg: var(--color-shiro);
+  --surface: var(--color-paper);
+  --surface-muted: var(--color-washi);
+  --surface-dark: var(--color-kokutan);
+  --text: var(--color-kokutan);
+  --text-muted: var(--color-ash);
+  --text-on-dark: var(--color-shiro);
+  --line: var(--color-tatami);
+  --line-strong: var(--color-tatami-dark);
+  --primary: var(--color-bengara);
+  --primary-hover: var(--color-bengara-dark);
+  --primary-soft: var(--color-bengara-soft);
+  --on-primary: #fff;
+  --secondary: var(--color-shinbashi);
+  --secondary-hover: var(--color-shinbashi-dark);
+  --secondary-soft: var(--color-shinbashi-soft);
+  --warning: var(--color-ochre);
+  --warning-soft: var(--color-ochre-soft);
+  --danger: var(--color-bengara-dark);
+  --danger-soft: var(--color-bengara-soft);
+  --overlay: rgb(22 21 21 / .55);
+  --focus-ring: 0 0 0 3px rgb(166 43 43 / .25);
+
+  /* --- Tipografia --- */
+  --font-serif: 'Cormorant Garamond', 'Shippori Mincho', Georgia, 'Times New Roman', serif;
+  --font-sans: Inter, ui-sans-serif, system-ui, sans-serif;
+  --font-display: 'Bebas Neue', Impact, 'Arial Narrow', sans-serif;
+  --font-seal: 'Shippori Mincho', 'Noto Serif JP', serif;
+  --tracking-wide: .22em;      /* occhielli e maiuscoletti */
+  --tracking-label: .12em;
+
+  /* --- Spaziature (multipli di 4px) --- */
+  --space-1: 4px;
+  --space-2: 8px;
+  --space-3: 12px;
+  --space-4: 16px;
+  --space-5: 24px;
+  --space-6: 32px;
+  --space-7: 48px;
+  --space-8: 64px;
+
+  /* --- Raggi e ombre: angoli quasi vivi, come la carta --- */
+  --radius-sm: 2px;
+  --radius: 4px;
+  --radius-lg: 8px;
+  --radius-pill: 999px;
+  --shadow-soft: 0 1px 2px rgb(36 36 36 / .04), 0 6px 24px rgb(36 36 36 / .05);
+  --shadow-raised: 0 18px 48px rgb(36 36 36 / .16);
+
+  /* Motivo a onde (seigaiha) da usare come maschera: il colore lo decide chi lo usa. */
+  --pattern-waves: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='40' height='20' viewBox='0 0 40 20'%3E%3Cg fill='none' stroke='%23000' stroke-width='1'%3E%3Cpath d='M0 20a20 20 0 0 1 40 0M6 20a14 14 0 0 1 28 0M12 20a8 8 0 0 1 16 0M-20 10a20 20 0 0 1 40 0M-14 10a14 14 0 0 1 28 0M-8 10a8 8 0 0 1 16 0M20 10a20 20 0 0 1 40 0M26 10a14 14 0 0 1 28 0M32 10a8 8 0 0 1 16 0'/%3E%3C/g%3E%3C/svg%3E");
+}

@@ -1,0 +1,9 @@
+@import './styles/tokens.css';
+
+:root { font-family: var(--font-sans); color: var(--text); background: var(--bg); font-synthesis: none; line-height: 1.5; -webkit-font-smoothing: antialiased; }
+* { box-sizing: border-box; }
+body { margin: 0; }
+button, input, select, textarea { font: inherit; }
+button { cursor: pointer; }
+#root { min-height: 100vh; }
+::selection { background: var(--primary); color: var(--on-primary); }
