@@ -1,9 +1,9 @@
 /* Pagine semplici a schermo intero (404, accesso non consentito, login). */
-.center-page { min-height: 100vh; display: grid; place-items: center; padding: 24px 16px; }
-.center-card { width: min(440px, 100%); background: #fff; border: 1px solid #dfd5d0; border-radius: 14px; padding: 32px 28px; box-shadow: 0 10px 40px #3b172014; text-align: center; }
-.center-card h1 { margin: 0 0 10px; font-size: 1.6rem; }
-.center-card p { color: #5f5156; margin: 0 0 20px; line-height: 1.5; }
-.center-card .center-code { font-size: 3rem; font-weight: 800; color: #a23d57; margin: 0 0 4px; letter-spacing: .05em; }
-.center-link { display: inline-block; background: #75273c; color: #fff; text-decoration: none; padding: 10px 18px; border-radius: 8px; font-weight: 650; }
-.center-link:focus-visible, .center-link:hover { background: #5e1d30; }
-.forbidden.center-page { min-height: auto; padding: 40px 0; }
+.center-page { min-height: 100vh; display: grid; place-items: center; padding: var(--space-5) var(--space-4); background: var(--bg); }
+.center-card { width: min(440px, 100%); background: var(--surface); border: 1px solid var(--line); border-radius: var(--radius-lg); padding: var(--space-6) 28px; box-shadow: var(--shadow-soft); text-align: center; }
+.center-card h1 { margin: 0 0 10px; font-family: var(--font-serif); font-size: 2.2rem; font-weight: 600; line-height: 1.1; }
+.center-card p { color: var(--text-muted); margin: 0 0 var(--space-5); line-height: 1.55; }
+.center-card .center-code { font-family: var(--font-serif); font-size: 4rem; font-weight: 600; color: var(--primary); margin: 0 0 var(--space-1); letter-spacing: .05em; line-height: 1; }
+.center-link { display: inline-flex; gap: var(--space-3); background: var(--primary); color: var(--on-primary); text-decoration: none; padding: 12px 20px; border-radius: var(--radius-sm); font-size: .78rem; font-weight: 600; letter-spacing: var(--tracking-label); text-transform: uppercase; }
+.center-link:focus-visible, .center-link:hover { background: var(--primary-hover); }
+.forbidden.center-page { min-height: auto; padding: 40px 0; background: transparent; }

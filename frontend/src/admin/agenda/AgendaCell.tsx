@@ -15,11 +15,11 @@ export default function AgendaCell({ artist, day }: { artist: Artist; day: strin
   const free = freeTimes(data.hours, [...bookings, ...consultations.map(({ slot }) => slot)])
 
   return <div className="calendar-cell">
-    {bookings.map((item) => <div className="calendar-event" key={item.id} style={{ borderColor: artist.color }}>
+    {bookings.map((item) => <div className="calendar-event" key={item.id} style={{ borderLeftColor: artist.color }}>
       <b>{item.start}–{item.end}</b>
       <span>Tatuaggio · {roomOf(item.bedId)}</span>
     </div>)}
-    {consultations.map(({ request, slot }) => <button className="calendar-event consultation-event" key={request.id} onClick={() => openRequest(request.id)}>
+    {consultations.map(({ request, slot }) => <button className={'calendar-event consultation-event ' + slot.status} key={request.id} onClick={() => openRequest(request.id)}>
       <b>{slot.start}–{slot.end}</b>
       <span>Consulenza {slot.status} · {request.name}</span>
     </button>)}

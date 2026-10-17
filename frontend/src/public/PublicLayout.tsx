@@ -3,6 +3,7 @@ import { Outlet } from 'react-router'
 import { errorMessage, siteApi, type PublicSite } from '../api'
 import type { PublicContext } from './publicContext'
 import SiteFrame from './SiteFrame'
+import { pageBackground } from './theme'
 import './site.css'
 
 export default function PublicLayout() {
@@ -20,7 +21,7 @@ export default function PublicLayout() {
   useEffect(() => {
     if (!background) return
     const root = document.documentElement
-    root.style.backgroundColor = background === 'dark' ? '#131012' : '#f7f2ec'
+    root.style.backgroundColor = pageBackground(background)
     return () => { root.style.backgroundColor = '' }
   }, [background])
   useEffect(() => { if (studioName) document.title = studioName + ' · Studio di tatuaggi' }, [studioName])
