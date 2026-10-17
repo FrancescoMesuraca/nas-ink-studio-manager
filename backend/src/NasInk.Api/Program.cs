@@ -4,9 +4,11 @@ using Microsoft.EntityFrameworkCore;
 using NasInk.Api.Auth;
 using NasInk.Api.Data;
 using NasInk.Api.Errors;
+using NasInk.Api.OpenApi;
 using NasInk.Api.Requests;
 using NasInk.Api.Site;
 using NasInk.Api.Studio;
+using NasInk.Api.Uploads;
 using NasInk.Domain.Users;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -45,6 +47,8 @@ builder.Services.AddCors(options =>
 
 builder.Services.AddNasInkAuth(builder.Configuration);
 builder.Services.AddRequestsRateLimit(builder.Configuration);
+builder.Services.AddUploads(builder.Configuration);
+builder.Services.AddNasInkOpenApi();
 builder.Services.AddSingleton(TimeProvider.System);
 builder.Services.AddSingleton<StudioClock>();
 
@@ -69,17 +73,28 @@ if (app.Environment.IsDevelopment())
 // --- Pipeline HTTP ---
 
 app.UseApiErrors();
+
+// Documentazione: /swagger e /openapi/v1.json, solo in sviluppo.
+if (app.Environment.IsDevelopment())
+    app.UseNasInkSwagger();
+
+// Immagini caricate, su GET /uploads/<nome>: file pubblici, prima di autenticazione e rate limit.
+app.UseUploadedFiles();
 app.UseCors();
 
-// Dopo UseCors, così anche le risposte 429 hanno gli header CORS e il browser mostra il messaggio.
-app.UseRateLimiter();
 app.UseAuthentication();
+
+// Dopo UseCors, così anche le risposte 429 hanno gli header CORS e il browser mostra il messaggio,
+// e dopo UseAuthentication, così le policy sanno chi ha fatto il login (gli upload dello staff non hanno limiti).
+app.UseRateLimiter();
 app.UseAuthorization();
 
 app.MapAuthEndpoints();
 app.MapSiteEndpoints();
 app.MapRequestsEndpoints();
 app.MapStudioEndpoints();
+app.MapStudioConfigEndpoints();
+app.MapUploadsEndpoints();
 
 app.Run();
 

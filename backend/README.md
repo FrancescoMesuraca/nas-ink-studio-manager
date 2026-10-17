@@ -1,8 +1,8 @@
 # NAS INK – backend (.NET)
 
-API in .NET 10 che sostituisce, un endpoint alla volta, i mock del frontend.
+API in .NET 10 che implementa tutto il contratto del frontend (`frontend/src/api/*/*.http.ts`): con `VITE_USE_MOCKS=false` il frontend non usa più nessun mock.
 
-Endpoint implementati:
+Endpoint:
 
 | Metodo e percorso | Accesso | Note |
 |---|---|---|
@@ -11,6 +11,11 @@ Endpoint implementati:
 | `POST /auth/logout` | autenticato | revoca il token (204) |
 | `GET /site/public` | pubblico | contenuti del sito + tatuatori + orari |
 | `GET /studio` | autenticato | `StudioData`: orari, sale con lettini, tatuatori, prenotazioni e richieste |
+| `PUT /studio/hours` | titolare | `{ start, end }`; 400 se non validi, 409 se prenotazioni o consulenze esistenti resterebbero fuori orario |
+| `POST /studio/rooms`, `PATCH`/`DELETE /studio/rooms/:id` | titolare | `{ name }`; eliminando una sala si eliminano i suoi lettini; 409 se ha lettini usati in prenotazioni |
+| `POST /studio/rooms/:roomId/beds`, `PATCH`/`DELETE /studio/beds/:id` | titolare | `{ name }`; 409 se il lettino è usato in prenotazioni |
+| `POST /studio/artists`, `PUT`/`DELETE /studio/artists/:id` | titolare | `{ name, color }` con colore `#rrggbb`; 409 se il tatuatore ha prenotazioni, consulenze o un account del gestionale |
+| `POST /studio/reset` | titolare | ricarica i dati demo del gestionale (utenti e sito restano); solo con `Demo:AllowReset` (attivo in sviluppo), altrimenti 404 |
 | `POST /studio/bookings`, `PUT /studio/bookings/:id`, `DELETE /studio/bookings/:id` | autenticato | regole di `bookingRules.js`: 400 se lettino, tatuatore o orario non sono validi (fuori dagli orari dello studio, fine prima dell'inizio); 409 se il lettino o il tatuatore sono occupati, anche da una consulenza; 404 se la prenotazione non esiste |
 | `POST /requests` | pubblico per `source: "sito"`, autenticato per `"gestionale"` | validazione come `requestValidation.ts`, 400 con `fields`; 401 per `"gestionale"` senza login; massimo 5 invii ogni 10 minuti per IP (429) |
 | `PATCH /requests/:id` | autenticato | `{ status }`; 400 se lo stato non è valido, 404 se la richiesta non esiste |
@@ -18,10 +23,13 @@ Endpoint implementati:
 | `PUT /requests/:id/slot` | autenticato | propone una fascia di consulenza; 400 se tatuatore o orario non sono validi, 409 se il tatuatore ha una prenotazione o un'altra consulenza |
 | `POST /requests/:id/slot/confirm` | autenticato | conferma la proposta e porta la richiesta in `consulenza`; 409 se non c'è una proposta |
 | `DELETE /requests/:id/slot` | autenticato | annulla la fascia di consulenza |
+| `PUT /site` | titolare | salva i contenuti del sito; 400 con `fields` se non validi |
+| `POST /uploads` | pubblico | `multipart/form-data`, campo `file` → `{ url }` (201); solo JPG, PNG, WebP o GIF, riconosciuti dal contenuto (400); massimo 5 MB (413); senza login massimo 20 caricamenti ogni 10 minuti per IP (429) |
+| `GET /uploads/:nome` | pubblico | le immagini caricate, con cache lunga |
 
 Utenti demo (da `src/NasInk.Api/Data/Seed/users.json`, password `demo1234`): `titolare@nasink.demo` (titolare), `maya@nasink.demo` e `luca@nasink.demo` (tatuatori).
 
-Gli altri endpoint del contratto sono ancora da fare.
+Nomi di sale, lettini e tatuatori: obbligatori, al massimo 120 caratteri. Le modifiche della configurazione rispondono `204` (`201` con l'elemento creato): il frontend poi rilegge `GET /studio`.
 
 ## Requisiti
 
@@ -46,6 +54,15 @@ L'API ascolta su `http://localhost:5080`. Al primo avvio, in ambiente `Developme
 ```bash
 curl http://localhost:5080/site/public
 ```
+
+### Documentazione delle API (Swagger)
+
+Con l'API accesa in sviluppo:
+
+- **http://localhost:5080/swagger**: Swagger UI con tutti gli endpoint, i corpi delle richieste e delle risposte e gli errori possibili. Per provare quelli protetti: esegui `POST /auth/login` con un utente demo, copia il `token`, premi *Authorize* e incollalo.
+- **http://localhost:5080/openapi/v1.json**: il documento OpenAPI, utile per generare client o importarlo in Postman.
+
+Il documento è generato dal codice (`Microsoft.AspNetCore.OpenApi`): descrizioni e codici di risposta stanno accanto a ogni `Map…` negli `*Endpoints.cs` (`.WithSummary`, `.Produces`, `.ProducesErrors`). Login, lucchetto e 401/403 sugli endpoint protetti vengono aggiunti in `OpenApi/OpenApiSetup.cs`. In produzione Swagger non è attivo.
 
 Per ripartire da un database vuoto (lo ricrea e lo riempie al prossimo avvio):
 
@@ -105,9 +122,11 @@ backend/
     Auth/                      JWT, login, me, logout
     Data/                      DbContext, seed, migrazioni
     Errors/                    { message, fields } per tutte le risposte di errore
+    OpenApi/                   documento OpenAPI e Swagger UI (solo sviluppo)
     Requests/                  endpoint /requests e limite anti-spam
     Site/                      endpoint /site
-    Studio/                    endpoint /studio (gestionale), StudioClock (oggi nel fuso dello studio)
+    Studio/                    endpoint /studio: agenda (StudioEndpoints), configurazione (StudioConfigEndpoints), StudioClock
+    Uploads/                   POST /uploads e file serviti da /uploads
   tests/NasInk.Api.Tests/      xUnit + WebApplicationFactory + Testcontainers
 ```
 
@@ -118,6 +137,7 @@ Scelte principali:
 - **Errori**: per rispondere con un errore previsto, negli endpoint si lancia `ApiException(status, messaggio, campi)`. Le eccezioni impreviste diventano un `500` generico e le rotte inesistenti un `404`, sempre nel formato `{ "message": "..." }`.
 - **JSON**: camelCase, e i campi `null` vengono omessi, così i campi facoltativi TypeScript (`bio?: string`) arrivano come assenti.
 - **Anti-spam**: `POST /requests` usa il rate limiter di ASP.NET Core (finestra fissa per indirizzo IP). Si regola in `RateLimiting:PublicForm` (`PermitLimit`, `WindowMinutes`).
+- **Upload**: i file vanno nella cartella `Uploads:Path` (predefinita `App_Data/uploads/` accanto all'API, esclusa da git; non `uploads/`, che su macOS coinciderebbe con la cartella del codice `Uploads/`) con un nome casuale, e il formato si controlla dai primi byte, non dal nome. Il frontend riduce le foto a 1280 px prima di inviarle. L'URL restituito è assoluto: in produzione, dietro un proxy, va impostato `Uploads:PublicBaseUrl`. Altre impostazioni: `Uploads:MaxBytes`, `Uploads:RateLimit:PermitLimit` e `WindowMinutes`.
 - **Autenticazione**:
   - **Password**: nella tabella `Users` c'è solo l'hash (`PasswordHasher` di ASP.NET Core), mai la password in chiaro. L'email è salvata in minuscolo.
   - **Token**: il login restituisce un JWT firmato con `Jwt:SigningKey`, che contiene id, nome e ruolo (`titolare` o `tatuatore`) e dura `Jwt:LifetimeHours` ore (8). La chiave in `appsettings.Development.json` vale solo per lo sviluppo; in produzione va passata come segreto (`Jwt__SigningKey`, almeno 32 caratteri).
@@ -134,16 +154,9 @@ dotnet ef migrations add NomeMigrazione -p src/NasInk.Api -o Data/Migrations
 
 In sviluppo viene applicata al prossimo avvio. In produzione si genera uno script con `dotnet ef migrations script --idempotent`.
 
-## Cosa manca
+## Limiti noti e prossimi passi
 
-Il contratto è già definito dal frontend, che oggi lo simula su `localStorage`:
-
-- **Endpoint e convenzioni** (JSON, `Authorization: Bearer`, formato degli errori con `message` e `fields`, status 400/401/403/404/409): sezione *Passare al backend vero* di [`../frontend/README.md`](../frontend/README.md).
-- **Forma dei dati**: [`../frontend/src/api/types.ts`](../frontend/src/api/types.ts).
-- **Dettaglio di ogni endpoint**: il commento in testa a ciascun `../frontend/src/api/*/*.http.ts`.
-- **Regole di business da replicare** (vanno in `NasInk.Domain`): [`bookingRules.js`](../frontend/src/services/bookingRules.js) per le consulenze (già portato in `BookingRules` per le prenotazioni) e la validazione del sito in [`siteApi.mock.ts`](../frontend/src/api/site/siteApi.mock.ts).
-- **Comportamento atteso**: i test `../frontend/src/**/*.mock.test.ts`, da usare come base per i test del backend.
-
-Limite noto: i conflitti tra prenotazioni sono controllati dal codice prima di salvare. Se due persone salvano nello stesso istante due prenotazioni sovrapposte, possono passare entrambe; si può chiudere il buco più avanti con un vincolo del database (`EXCLUDE` di PostgreSQL) o una transazione serializzabile.
-
-Prossimi passi suggeriti: le altre modifiche del gestionale (configurazione dello studio, gestione delle richieste e delle consulenze), poi `POST /uploads` (le immagini di riferimento del modulo) e `PUT /site`. Oggi nel gestionale funzionano prenotazioni e "Nuova richiesta"; gli altri salvataggi rispondono 404.
+- **Conflitti simultanei**: i conflitti tra prenotazioni e consulenze sono controllati dal codice prima di salvare. Se due persone salvano nello stesso istante due appuntamenti sovrapposti, possono passare entrambi. Si può chiudere il buco con un vincolo del database (`EXCLUDE` di PostgreSQL) o una transazione serializzabile.
+- **Immagini orfane**: un'immagine caricata e poi non usata (modulo abbandonato, foto sostituita nel sito) resta sul disco. Servirà una pulizia periodica.
+- **Riferimenti delle richieste**: `referenceImages` accetta qualunque URL; si può limitare agli URL di `/uploads`.
+- **Produzione**: mancano ancora la gestione degli account (creazione utenti, cambio password), l'invio di email ai clienti e la configurazione per il deploy (migrazioni, segreti, storage delle immagini su un disco persistente o uno storage di oggetti).

@@ -13,6 +13,10 @@ public sealed class ApiFactory : WebApplicationFactory<Program>, IAsyncLifetime
 {
     private readonly PostgreSqlContainer _database = new PostgreSqlBuilder("postgres:17").Build();
 
+    /// <summary>Cartella temporanea per le immagini caricate, cancellata a fine test.</summary>
+    public string UploadsPath { get; } =
+        Path.Combine(Path.GetTempPath(), "nasink-tests-" + Guid.NewGuid().ToString("N"));
+
     protected override void ConfigureWebHost(IWebHostBuilder builder)
     {
         builder.UseEnvironment("Development");
@@ -20,6 +24,8 @@ public sealed class ApiFactory : WebApplicationFactory<Program>, IAsyncLifetime
         // Nei test tutte le chiamate arrivano dallo stesso "IP": il limite anti-spam va alzato
         // (il test che lo verifica lo abbassa di nuovo).
         builder.UseSetting("RateLimiting:PublicForm:PermitLimit", "1000");
+        builder.UseSetting("Uploads:RateLimit:PermitLimit", "1000");
+        builder.UseSetting("Uploads:Path", UploadsPath);
     }
 
     public Task InitializeAsync() => _database.StartAsync();
@@ -28,5 +34,7 @@ public sealed class ApiFactory : WebApplicationFactory<Program>, IAsyncLifetime
     {
         await base.DisposeAsync();
         await _database.DisposeAsync();
+        if (Directory.Exists(UploadsPath))
+            Directory.Delete(UploadsPath, recursive: true);
     }
 }

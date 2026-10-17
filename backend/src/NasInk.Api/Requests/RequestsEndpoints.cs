@@ -2,6 +2,7 @@ using System.Threading.RateLimiting;
 using Microsoft.EntityFrameworkCore;
 using NasInk.Api.Data;
 using NasInk.Api.Errors;
+using NasInk.Api.OpenApi;
 using NasInk.Domain.Requests;
 using NasInk.Domain.Studio;
 
@@ -94,12 +95,40 @@ public static class RequestsEndpoints
     public static IEndpointRouteBuilder MapRequestsEndpoints(this IEndpointRouteBuilder app)
     {
         var requests = app.MapGroup("/requests").WithTags("Richieste");
-        requests.MapPost("/", CreateRequest).RequireRateLimiting(PublicFormPolicy);
-        requests.MapPatch("/{id}", SetStatus).RequireAuthorization();
-        requests.MapPut("/{id}/consultation", SaveConsultation).RequireAuthorization();
-        requests.MapPut("/{id}/slot", ProposeSlot).RequireAuthorization();
-        requests.MapPost("/{id}/slot/confirm", ConfirmSlot).RequireAuthorization();
-        requests.MapDelete("/{id}/slot", CancelSlot).RequireAuthorization();
+        requests
+            .MapPost("/", CreateRequest)
+            .RequireRateLimiting(PublicFormPolicy)
+            .WithSummary("Nuova richiesta di tatuaggio")
+            .WithDescription(
+                "Pubblica per `source: \"sito\"` (serve il consenso privacy, massimo 5 invii ogni 10 minuti per IP); per `\"gestionale\"` serve il login."
+            )
+            .Produces<CustomerRequest>(StatusCodes.Status201Created)
+            .ProducesErrors(400, 401, 429);
+        requests
+            .MapPatch("/{id}", SetStatus)
+            .RequireAuthorization()
+            .WithSummary("Cambia lo stato di una richiesta")
+            .ProducesErrors(400, 404);
+        requests
+            .MapPut("/{id}/consultation", SaveConsultation)
+            .RequireAuthorization()
+            .WithSummary("Salva la scheda di consulenza")
+            .ProducesErrors(404);
+        requests
+            .MapPut("/{id}/slot", ProposeSlot)
+            .RequireAuthorization()
+            .WithSummary("Propone una fascia di consulenza")
+            .ProducesErrors(400, 404, 409);
+        requests
+            .MapPost("/{id}/slot/confirm", ConfirmSlot)
+            .RequireAuthorization()
+            .WithSummary("Conferma la fascia proposta (il cliente ha accettato)")
+            .ProducesErrors(404, 409);
+        requests
+            .MapDelete("/{id}/slot", CancelSlot)
+            .RequireAuthorization()
+            .WithSummary("Annulla la fascia di consulenza")
+            .ProducesErrors(404);
         return app;
     }
 

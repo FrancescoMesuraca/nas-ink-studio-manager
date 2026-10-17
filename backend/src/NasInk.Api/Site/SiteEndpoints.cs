@@ -1,6 +1,7 @@
 using Microsoft.EntityFrameworkCore;
 using NasInk.Api.Data;
 using NasInk.Api.Errors;
+using NasInk.Api.OpenApi;
 using NasInk.Domain.Site;
 using NasInk.Domain.Users;
 
@@ -15,9 +16,13 @@ public static class SiteEndpoints
     public static IEndpointRouteBuilder MapSiteEndpoints(this IEndpointRouteBuilder app)
     {
         var site = app.MapGroup("/site").WithTags("Sito");
-        site.MapGet("/public", GetPublicSite);
+        site.MapGet("/public", GetPublicSite)
+            .WithSummary("Contenuti del sito vetrina, tatuatori e orari");
         // La policy "titolare" (registrata in AddNasInkAuth) risponde 401 senza token e 403 ai tatuatori.
-        site.MapPut("/", SaveContent).RequireAuthorization(Roles.Titolare);
+        site.MapPut("/", SaveContent)
+            .RequireAuthorization(Roles.Titolare)
+            .WithSummary("Salva i contenuti del sito")
+            .ProducesErrors(400);
         return app;
     }
 

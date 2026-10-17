@@ -482,3 +482,6 @@ $RECYCLE.BIN/
 
 # Vim temporary swap files
 *.swp
+
+# Immagini caricate in sviluppo (Uploads:Path). Non "uploads/": su macOS coinciderebbe con la cartella del codice Uploads/.
+src/NasInk.Api/App_Data/

@@ -6,6 +6,7 @@ using Microsoft.Extensions.Options;
 using Microsoft.IdentityModel.Tokens;
 using NasInk.Api.Data;
 using NasInk.Api.Errors;
+using NasInk.Api.OpenApi;
 using NasInk.Domain.Users;
 
 namespace NasInk.Api.Auth;
@@ -114,9 +115,18 @@ public static class AuthEndpoints
     public static IEndpointRouteBuilder MapAuthEndpoints(this IEndpointRouteBuilder app)
     {
         var auth = app.MapGroup("/auth").WithTags("Autenticazione");
-        auth.MapPost("/login", Login).RequireRateLimiting(LoginPolicy);
-        auth.MapPost("/logout", Logout).RequireAuthorization();
-        auth.MapGet("/me", Me).RequireAuthorization();
+        auth.MapPost("/login", Login)
+            .RequireRateLimiting(LoginPolicy)
+            .WithSummary("Accesso al gestionale")
+            .WithDescription(
+                "Restituisce il token da usare come `Authorization: Bearer <token>`. Massimo 10 tentativi ogni 5 minuti per IP."
+            )
+            .ProducesErrors(400, 401, 429);
+        auth.MapPost("/logout", Logout)
+            .RequireAuthorization()
+            .WithSummary("Uscita: il token non vale più")
+            .Produces(StatusCodes.Status204NoContent);
+        auth.MapGet("/me", Me).RequireAuthorization().WithSummary("Utente del token");
         return app;
     }
 

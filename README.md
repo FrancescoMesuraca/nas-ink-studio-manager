@@ -4,8 +4,8 @@ Sito vetrina e gestionale per uno studio di tatuaggi.
 
 | Cartella | Contenuto |
 |---|---|
-| [`frontend/`](frontend/README.md) | React 19 + Vite + TypeScript: sito pubblico e gestionale. Oggi funziona da solo, con API simulate su `localStorage`. |
-| [`backend/`](backend/README.md) | API in .NET (da creare) che sostituirà le API simulate. |
+| [`frontend/`](frontend/README.md) | React 19 + Vite + TypeScript: sito pubblico e gestionale. Usa il backend, oppure API simulate su `localStorage` per lavorare senza. |
+| [`backend/`](backend/README.md) | API in .NET 10 + PostgreSQL che implementa tutto il contratto del frontend. |
 | [`docs/`](docs/) | Piano del progetto e note comuni. |
 
 ## Avvio rapido

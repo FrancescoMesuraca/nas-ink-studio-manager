@@ -5,7 +5,7 @@ Applicazione per uno studio di tatuaggi, con due lati:
 - **Sito vetrina pubblico** (`/`): copertina, studio, galleria lavori, tatuatori, contatti e orari, con il pulsante **“Richiedi un tatuaggio”** che apre il modulo di richiesta (`/richiesta`).
 - **Gestionale riservato** (`/gestionale`): lettini, agenda, richieste, schede clienti, configurazione ed editor del sito vetrina, con login per titolare e tatuatori.
 
-React 19 + Vite + TypeScript + react-router. Il backend in .NET andrà in [`../backend`](../backend/README.md) ma **non c’è ancora**: tutte le API sono simulate su `localStorage`, con latenza ed errori realistici, dietro interfacce pronte per il backend vero.
+React 19 + Vite + TypeScript + react-router. Le API hanno due implementazioni dietro le stesse interfacce: il backend .NET in [`../backend`](../backend/README.md), che le implementa tutte, e i mock su `localStorage`, con latenza ed errori realistici, per lavorare sul frontend senza backend. Senza `.env.local` partono i mock; `./start-dev.sh` dalla radice avvia tutto collegato al backend.
 
 ## Avvio
 
@@ -99,8 +99,8 @@ Dopo una modifica il client rilegge `GET /studio`, quindi le risposte di modific
 
 ## Note e limiti attuali
 
-- Le immagini caricate sono convertite in data URL compressi e salvate in `localStorage` (spazio limitato a pochi MB): servono uno storage vero e URL stabili lato backend.
+- Le immagini vengono ridotte nel browser prima del caricamento. Nel mock diventano data URL salvati in `localStorage` (spazio limitato a pochi MB); con il backend vanno su `POST /uploads`.
 - Nessuna email o notifica al cliente; la conferma della consulenza nel gestionale è simulata.
 - L’informativa privacy è un testo segnaposto da sostituire con quella dello studio.
-- Il controllo dei ruoli nel mock riguarda login e salvataggio del sito; le altre operazioni del gestionale sono protette solo lato interfaccia, il backend dovrà verificarle tutte.
+- Il controllo dei ruoli nel mock riguarda login e salvataggio del sito; il backend li verifica su tutte le operazioni.
 - Fuori dallo scopo per ora: pagamenti/caparre, multi-studio, prenotazione autonoma da parte del cliente, SEO avanzato/SSR.

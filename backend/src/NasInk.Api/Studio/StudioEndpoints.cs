@@ -1,8 +1,11 @@
+using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using NasInk.Api.Data;
 using NasInk.Api.Errors;
+using NasInk.Api.OpenApi;
 using NasInk.Domain.Requests;
 using NasInk.Domain.Studio;
+using NasInk.Domain.Users;
 
 namespace NasInk.Api.Studio;
 
@@ -10,11 +13,13 @@ namespace NasInk.Api.Studio;
 // le modifiche alla configurazione saranno riservate al titolare.
 //
 //   GET /studio   → StudioData   orari, sale con lettini, tatuatori, prenotazioni e richieste
+//   POST /studio/reset   → StudioData   solo titolare e solo se Demo:AllowReset è true (in sviluppo),
+//        altrimenti 404: ricarica i dati demo del gestionale (utenti e sito restano come sono)
 //   POST   /studio/bookings        { date, start, end, bedId, artistId } → Booking (201)
 //   PUT    /studio/bookings/:id    Booking → Booking
 //   DELETE /studio/bookings/:id    204
 //          400 se lettino, tatuatore o orario non sono validi, 409 in caso di conflitto, 404 se non esiste
-//   PUT /studio/hours, /studio/rooms…, /studio/beds…, /studio/artists…   (da fare, solo titolare)
+//   Orari, sale, lettini e tatuatori: StudioConfigEndpoints (solo titolare).
 public static class StudioEndpoints
 {
     // Forma esatta di `StudioData` nel frontend. Usiamo record dedicati invece delle entità per non
@@ -45,10 +50,31 @@ public static class StudioEndpoints
     public static IEndpointRouteBuilder MapStudioEndpoints(this IEndpointRouteBuilder app)
     {
         var studio = app.MapGroup("/studio").WithTags("Gestionale").RequireAuthorization();
-        studio.MapGet("/", GetStudio);
-        studio.MapPost("/bookings", CreateBooking);
-        studio.MapPut("/bookings/{id}", UpdateBooking);
-        studio.MapDelete("/bookings/{id}", DeleteBooking);
+        studio
+            .MapGet("/", GetStudio)
+            .WithSummary("Tutto il gestionale: orari, sale, tatuatori, prenotazioni e richieste");
+        studio
+            .MapPost("/reset", Reset)
+            .RequireAuthorization(Roles.Titolare)
+            .WithSummary("Ricarica i dati demo del gestionale")
+            .WithDescription(
+                "Solo con `Demo:AllowReset` (attivo in sviluppo), altrimenti 404. Utenti e sito non cambiano."
+            )
+            .ProducesErrors(404);
+        studio
+            .MapPost("/bookings", CreateBooking)
+            .WithSummary("Nuova prenotazione")
+            .Produces<Booking>(StatusCodes.Status201Created)
+            .ProducesErrors(400, 409);
+        studio
+            .MapPut("/bookings/{id}", UpdateBooking)
+            .WithSummary("Modifica una prenotazione")
+            .ProducesErrors(400, 404, 409);
+        studio
+            .MapDelete("/bookings/{id}", DeleteBooking)
+            .WithSummary("Elimina una prenotazione")
+            .Produces(StatusCodes.Status204NoContent)
+            .ProducesErrors(404);
         return app;
     }
 
@@ -163,6 +189,31 @@ public static class StudioEndpoints
                 StatusCodes.Status409Conflict,
                 "Il tatuatore ha una consulenza in questa fascia oraria."
             );
+    }
+
+    /// <summary>Come "Ripristina dati demo" nel mock: svuota il gestionale e lo riempie con il seed.</summary>
+    private static async Task<StudioDataDto> Reset(
+        NasInkDbContext db,
+        IConfiguration configuration,
+        IPasswordHasher<User> passwordHasher,
+        StudioClock clock,
+        CancellationToken cancellationToken
+    )
+    {
+        if (!configuration.GetValue("Demo:AllowReset", false))
+            throw new ApiException(StatusCodes.Status404NotFound, "Risorsa non trovata.");
+
+        await using var transaction = await db.Database.BeginTransactionAsync(cancellationToken);
+        // Prima chi fa riferimento agli altri (prenotazioni → lettini e tatuatori).
+        await db.Bookings.ExecuteDeleteAsync(cancellationToken);
+        await db.Requests.ExecuteDeleteAsync(cancellationToken);
+        await db.Rooms.ExecuteDeleteAsync(cancellationToken);
+        await db.Artists.ExecuteDeleteAsync(cancellationToken);
+        await db.StudioSettings.ExecuteDeleteAsync(cancellationToken);
+        // Il seeder riempie solo le tabelle vuote: utenti e contenuti del sito non vengono toccati.
+        await DbSeeder.SeedAsync(db, passwordHasher, clock.Today(), cancellationToken);
+        await transaction.CommitAsync(cancellationToken);
+        return await GetStudio(db, cancellationToken);
     }
 
     private static ApiException BookingNotFound() =>
