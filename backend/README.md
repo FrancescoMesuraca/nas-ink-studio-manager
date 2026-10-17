@@ -13,6 +13,11 @@ Endpoint implementati:
 | `GET /studio` | autenticato | `StudioData`: orari, sale con lettini, tatuatori, prenotazioni e richieste |
 | `POST /studio/bookings`, `PUT /studio/bookings/:id`, `DELETE /studio/bookings/:id` | autenticato | regole di `bookingRules.js`: 400 se lettino, tatuatore o orario non sono validi (fuori dagli orari dello studio, fine prima dell'inizio); 409 se il lettino o il tatuatore sono occupati, anche da una consulenza; 404 se la prenotazione non esiste |
 | `POST /requests` | pubblico per `source: "sito"`, autenticato per `"gestionale"` | validazione come `requestValidation.ts`, 400 con `fields`; 401 per `"gestionale"` senza login; massimo 5 invii ogni 10 minuti per IP (429) |
+| `PATCH /requests/:id` | autenticato | `{ status }`; 400 se lo stato non è valido, 404 se la richiesta non esiste |
+| `PUT /requests/:id/consultation` | autenticato | salva la scheda di consulenza (i campi mancanti diventano vuoti) |
+| `PUT /requests/:id/slot` | autenticato | propone una fascia di consulenza; 400 se tatuatore o orario non sono validi, 409 se il tatuatore ha una prenotazione o un'altra consulenza |
+| `POST /requests/:id/slot/confirm` | autenticato | conferma la proposta e porta la richiesta in `consulenza`; 409 se non c'è una proposta |
+| `DELETE /requests/:id/slot` | autenticato | annulla la fascia di consulenza |
 
 Utenti demo (da `src/NasInk.Api/Data/Seed/users.json`, password `demo1234`): `titolare@nasink.demo` (titolare), `maya@nasink.demo` e `luca@nasink.demo` (tatuatori).
 
